@@ -1,7 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
-
-namespace TastifyAPI.DTOs
+﻿namespace TastifyAPI.DTOs
 {
     public class BookingDto
     {
