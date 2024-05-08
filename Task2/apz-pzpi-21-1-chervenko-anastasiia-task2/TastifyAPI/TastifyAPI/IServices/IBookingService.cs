@@ -8,6 +8,8 @@ namespace TastifyAPI.IServices
         Task<Booking?> GetByIdAsync(string id);
         Task CreateAsync(Booking newBooking);
         Task UpdateAsync(string id, Booking updatedBooking);
-        Task RemoveAsync(string id);
+        Task DeleteAsync(string id);
+        Task<Booking> GetByDateAsync(DateTime date);
+
     }
 }

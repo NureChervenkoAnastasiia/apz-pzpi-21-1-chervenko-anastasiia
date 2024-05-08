@@ -9,6 +9,9 @@ using TastifyAPI.Entities;
 using TastifyAPI.IServices;
 using TastifyAPI.Services;
 
+//TODO: /get-restaurant-menu
+//TODO: /get-position-ingridients
+
 namespace TastifyAPI.Controllers
 {
     [Route("api/[controller]")]

@@ -25,7 +25,9 @@ namespace TastifyAPI.Services
         public async Task UpdateAsync(string id, Booking updatedbooking) =>
             await _bookingCollection.ReplaceOneAsync(x => x.Id == id, updatedbooking);
 
-        public async Task RemoveAsync(string id) =>
+        public async Task DeleteAsync(string id) =>
             await _bookingCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task<Booking?> GetByDateAsync(DateTime date) =>
+            await _bookingCollection.Find(x => x.DateTime == date).FirstOrDefaultAsync();
     }
 }

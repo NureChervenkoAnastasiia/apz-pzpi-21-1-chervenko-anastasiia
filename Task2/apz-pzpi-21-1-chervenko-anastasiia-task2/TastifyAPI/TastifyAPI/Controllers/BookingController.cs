@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
-using TastifyAPI.DTOs.CreateDTOs;
-using TastifyAPI.DTOs.UpdateDTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Services;
+
+//TODO: fix /get-bookings-by-date
 
 namespace TastifyAPI.Controllers
 {
@@ -94,7 +94,7 @@ namespace TastifyAPI.Controllers
                 if (booking == null)
                     return NotFound($"Booking with ID {id} not found");
 
-                await _bookingService.RemoveAsync(id);
+                await _bookingService.DeleteAsync(id);
 
                 return NoContent();
             }
@@ -128,5 +128,22 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to update booking with ID {id}");
             }
         }
+
+        [HttpGet("get-bookins-by-date")]
+        public async Task<ActionResult<List<BookingDto>>> GetByDate([FromQuery] DateTime date)
+        {
+            try
+            {
+                var bookings = await _bookingService.GetByDateAsync(date);
+                var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
+                return Ok(bookingDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get bookings for date {0}", date);
+                return StatusCode(500, $"Failed to get bookings for date {date}");
+            }
+        }
+
     }
 }

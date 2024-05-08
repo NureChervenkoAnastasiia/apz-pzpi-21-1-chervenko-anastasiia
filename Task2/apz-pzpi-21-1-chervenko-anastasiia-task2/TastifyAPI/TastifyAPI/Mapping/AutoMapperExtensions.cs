@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
 using TastifyAPI.Mapping;
+using Microsoft.AspNetCore.Hosting;
 
 namespace TastifyAPI.Extensions
 {
@@ -11,6 +12,7 @@ namespace TastifyAPI.Extensions
         {
             services.AddAutoMapper(Assembly.GetAssembly(typeof(RestaurantProfile)));
             services.AddAutoMapper(Assembly.GetAssembly(typeof(MenuProfile)));
+
 
             return services;
         }
