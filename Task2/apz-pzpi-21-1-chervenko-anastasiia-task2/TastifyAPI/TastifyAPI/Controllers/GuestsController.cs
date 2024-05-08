@@ -67,7 +67,7 @@ namespace TastifyAPI.Controllers
 
         // POST api/GuestController/create-new-guest/5
         [HttpPost("create-new-guest")]
-        public async Task<ActionResult<GuestDto>> Create(GuestDto GuestDto)
+        public async Task<ActionResult<GuestDto>> Create(GuestDto guestDto)
         {
             if (!ModelState.IsValid)
             {
@@ -76,7 +76,7 @@ namespace TastifyAPI.Controllers
 
             try
             {
-                var Guest = _mapper.Map<Guest>(GuestDto);
+                var Guest = _mapper.Map<Guest>(guestDto);
                 await _guestService.CreateAsync(Guest);
 
                 var createdGuestDto = _mapper.Map<GuestDto>(Guest);
@@ -91,7 +91,7 @@ namespace TastifyAPI.Controllers
 
         // PUT api/GuestController/update-guest/5
         [HttpPut("update-guest/{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, GuestDto updateDto)
+        public async Task<IActionResult> Update(string id, GuestDto guestDto)
         {
             try
             {
@@ -99,7 +99,8 @@ namespace TastifyAPI.Controllers
                 if (existingGuest == null)
                     return NotFound();
 
-                _mapper.Map(updateDto, existingGuest);
+                guestDto.Id = id;
+                _mapper.Map(guestDto, existingGuest);
 
                 await _guestService.UpdateAsync(id, existingGuest);
 
