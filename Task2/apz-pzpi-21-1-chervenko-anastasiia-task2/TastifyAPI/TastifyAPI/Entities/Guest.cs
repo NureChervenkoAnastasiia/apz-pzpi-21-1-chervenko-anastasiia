@@ -23,5 +23,8 @@ namespace TastifyAPI.Entities
 
         [BsonElement("password_hash"), BsonRepresentation(BsonType.String)]
         public string? PasswordHash { get; set; }
+
+        [BsonElement("login"), BsonRepresentation(BsonType.String)]
+        public string? Login {  get; set; } 
     }
 }

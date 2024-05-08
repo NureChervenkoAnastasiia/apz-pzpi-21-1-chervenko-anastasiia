@@ -10,6 +10,13 @@ using TastifyAPI.DTOs.UpdateDTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Services;
 
+//TODO:/
+//TODO:/login
+//TODO:/get-profile
+//TODO:/
+//TODO:
+//TODO:
+
 namespace TastifyAPI.Controllers
 {
     [ApiController]
@@ -28,8 +35,8 @@ namespace TastifyAPI.Controllers
             _mapper = mapper;
         }
 
-        // GET api/GuestController
-        [HttpGet]
+        // GET api/GuestController/get-all-guests
+        [HttpGet("get-all-guests")]
         public async Task<ActionResult<List<GuestDto>>> Get()
         {
             try
@@ -46,7 +53,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/GuestController/5
-        [HttpGet("guest/{id:length(24)}")]
+        [HttpGet("get-guest-prifile/{id:length(24)}")]
         public async Task<ActionResult<GuestDto>> GetById(string id)
         {
             try
@@ -65,8 +72,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/GuestController/create-new-guest/5
-        [HttpPost("create-new-guest")]
+        // POST api/GuestController/register-new-guest/5
+        [HttpPost("register-new-guest")]
         public async Task<ActionResult<GuestDto>> Create(GuestDto guestDto)
         {
             if (!ModelState.IsValid)
@@ -89,8 +96,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // PUT api/GuestController/update-guest/5
-        [HttpPut("update-guest/{id:length(24)}")]
+        // PUT api/GuestController/update-guest-profile/5
+        [HttpPut("update-guest-profile/{id:length(24)}")]
         public async Task<IActionResult> Update(string id, GuestDto guestDto)
         {
             try
@@ -113,8 +120,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // DELETE api/<GuestController>/delete-guest/5
-        [HttpDelete("delete-guest/{id:length(24)}")]
+        // DELETE api/<GuestController>/delete-guest-profile/5
+        [HttpDelete("delete-guest-profile/{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -132,6 +139,48 @@ namespace TastifyAPI.Controllers
                 _logger.LogError(ex, "Failed to delete Guest with ID {0}", id);
                 return StatusCode(500, $"Failed to delete Guest with ID {id}");
             }
+        }
+
+        // POST api/GuestController/make-coupon
+        [HttpPost("make-coupon")]
+        public ActionResult<CouponDto> MakeCoupon(int bonus)
+        {
+            try
+            {
+                var (discount, remainingBonus) = CalculateCoupon(bonus);
+                var couponDto = new CouponDto { Discount = discount, Bonus = remainingBonus };
+                return Ok(couponDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to make coupon for bonus {0}", bonus);
+                return StatusCode(500, $"Failed to make coupon for bonus {bonus}");
+            }
+        }
+
+        private (decimal, int) CalculateCoupon(int bonus)
+        {
+            decimal bonusCoefficient = 0.7m;
+            int discount = 0;
+
+            if (bonus < 100)
+            {
+                return (discount, bonus);
+            }
+
+            if (bonus <= 200)
+            {
+                bonusCoefficient = 0.5m;
+            }
+            else if (bonus <= 300)
+            {
+                bonusCoefficient = 0.6m;
+            }
+
+            discount = (int)(bonus * bonusCoefficient);
+            int remainingBonus = bonus - discount;
+
+            return (discount, remainingBonus);
         }
     }
 }
