@@ -10,8 +10,7 @@ namespace TastifyAPI.Mapping
     {
         public MenuProfile() {
             CreateMap<Menu, MenuDto>();
-            CreateMap<MenuCreateDto, Menu>();
-            CreateMap<MenuUpdateDto, Menu>();
+            CreateMap<MenuDto, Menu>();
         }
         
     }

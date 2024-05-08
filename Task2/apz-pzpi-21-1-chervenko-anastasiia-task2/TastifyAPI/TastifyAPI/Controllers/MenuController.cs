@@ -18,7 +18,6 @@ namespace TastifyAPI.Controllers
         private readonly ILogger<MenuController> _logger;
         private readonly IMapper _mapper;
 
-
         public MenuController(MenuService menuService, ILogger<MenuController> logger, IMapper mapper)
         {
             _menuService = menuService;
@@ -27,14 +26,36 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController
+        /*[HttpGet]
+        public async Task<ActionResult<List<MenuDto>>> Get()
+        {
+            try
+            {
+                var menuItems = await _menuService.GetAsync();
+                var menuDtos = _mapper.Map<List<MenuDto>>(menuItems);
+                return Ok(menuDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all Menus");
+                return StatusCode(500, "Failed to get all Menus");
+            }
+        }*/
+        // GET api/MenuController
         [HttpGet]
         public async Task<ActionResult<List<MenuDto>>> Get()
         {
             try
             {
-                var Menus = await _menuService.GetAsync();
-                var MenuDtos = _mapper.Map<List<MenuDto>>(Menus);
-                return Ok(MenuDtos);
+                _logger.LogInformation("Attempting to retrieve all menus");
+
+                var menuItems = await _menuService.GetAsync();
+                _logger.LogInformation($"Retrieved {menuItems.Count} menus");
+
+                var menuDtos = _mapper.Map<List<MenuDto>>(menuItems);
+                _logger.LogInformation("Mapped menu items to MenuDto");
+
+                return Ok(menuDtos);
             }
             catch (Exception ex)
             {
@@ -43,18 +64,19 @@ namespace TastifyAPI.Controllers
             }
         }
 
+
         // GET api/MenuController/5
         [HttpGet("/{id:length(24)}")]
         public async Task<ActionResult<MenuDto>> GetById(string id)
         {
             try
             {
-                var Menu = await _menuService.GetByIdAsync(id);
-                if (Menu == null)
+                var menu = await _menuService.GetByIdAsync(id);
+                if (menu == null)
                     return NotFound();
 
-                var MenuDto = _mapper.Map<MenuDto>(Menu);
-                return Ok(MenuDto);
+                var menuDto = _mapper.Map<MenuDto>(menu);
+                return Ok(menuDto);
             }
             catch (Exception ex)
             {
@@ -65,7 +87,7 @@ namespace TastifyAPI.Controllers
 
         // POST api/MenuController/create-new-menu/5
         [HttpPost("create-new-menu")]
-        public async Task<ActionResult<MenuDto>> Create(MenuDto MenuDto)
+        public async Task<ActionResult<MenuDto>> Create(MenuDto menuDto)
         {
             if (!ModelState.IsValid)
             {
@@ -74,10 +96,10 @@ namespace TastifyAPI.Controllers
 
             try
             {
-                var Menu = _mapper.Map<Menu>(MenuDto);
-                await _menuService.CreateAsync(Menu);
+                var menu = _mapper.Map<Menu>(menuDto);
+                await _menuService.CreateAsync(menu);
 
-                var createdMenuDto = _mapper.Map<MenuDto>(Menu);
+                var createdMenuDto = _mapper.Map<MenuDto>(menu);
                 return CreatedAtAction(nameof(GetById), new { id = createdMenuDto.Id }, createdMenuDto);
             }
             catch (Exception ex)
@@ -97,6 +119,7 @@ namespace TastifyAPI.Controllers
                 if (existingMenu == null)
                     return NotFound();
 
+                existingMenu.Id = id;
                 _mapper.Map(updateDto, existingMenu);
 
                 await _menuService.UpdateAsync(id, existingMenu);
@@ -116,8 +139,8 @@ namespace TastifyAPI.Controllers
         {
             try
             {
-                var Menu = await _menuService.GetByIdAsync(id);
-                if (Menu == null)
+                var menu = await _menuService.GetByIdAsync(id);
+                if (menu == null)
                     return NotFound();
 
                 await _menuService.RemoveAsync(id);
