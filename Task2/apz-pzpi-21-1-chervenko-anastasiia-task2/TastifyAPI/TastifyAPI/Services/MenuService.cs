@@ -13,10 +13,12 @@ namespace TastifyAPI.Services
     public class MenuService : IMenuService
     {
         private readonly IMongoCollection<Menu> _menuCollection;
+        private readonly ILogger<MenuService> _logger;
 
-        public MenuService(IMongoDatabase database)
+        public MenuService(IMongoDatabase database, ILogger<MenuService> logger)
         {
-            _menuCollection = database.GetCollection<Menu>("Menus");
+            _menuCollection = database.GetCollection<Menu>("Menu");
+            _logger = logger;
         }
 
         public async Task<List<Menu>> GetAsync() =>

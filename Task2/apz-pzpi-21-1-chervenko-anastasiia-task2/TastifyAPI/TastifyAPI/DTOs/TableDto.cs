@@ -6,7 +6,7 @@ namespace TastifyAPI.DTOs
     public class TableDto
     {
         public string? Id { get; set; }
-        public string? Number { get; set; }
+        public int? Number { get; set; }
         public string? Status { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace TastifyAPI.Services
 
         public ScheduleService(IMongoDatabase database)
         {
-            _scheduleCollection = database.GetCollection<Schedule>("Schedules");
+            _scheduleCollection = database.GetCollection<Schedule>("Schedule");
         }
 
         public async Task<List<Schedule>> GetAsync() =>

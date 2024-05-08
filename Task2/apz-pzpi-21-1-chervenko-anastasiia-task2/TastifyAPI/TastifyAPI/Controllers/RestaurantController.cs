@@ -90,7 +90,7 @@ namespace TastifyAPI.Controllers
 
         // PUT api/RestaurantController/update-restaurant/5
         [HttpPut("update-restaurant/{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, RestaurantDto updateDto)
+        public async Task<IActionResult> Update(string id, RestaurantDto restaurantDto)
         {
             try
             {
@@ -98,7 +98,7 @@ namespace TastifyAPI.Controllers
                 if (existingRestaurant == null)
                     return NotFound();
 
-                _mapper.Map(updateDto, existingRestaurant);
+                _mapper.Map(restaurantDto, existingRestaurant);
 
                 await _restaurantsService.UpdateAsync(id, existingRestaurant);
 

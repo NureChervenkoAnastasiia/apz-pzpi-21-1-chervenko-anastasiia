@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
+using TastifyAPI.IServices;
 using TastifyAPI.Services;
 
 namespace TastifyAPI.Controllers
@@ -25,36 +26,14 @@ namespace TastifyAPI.Controllers
             _mapper = mapper;
         }
 
-        // GET api/MenuController
-        /*[HttpGet]
+        // GET api/MenuController/all-menu-positions
+        [HttpGet("/all-menu-positions")]
         public async Task<ActionResult<List<MenuDto>>> Get()
         {
             try
             {
                 var menuItems = await _menuService.GetAsync();
                 var menuDtos = _mapper.Map<List<MenuDto>>(menuItems);
-                return Ok(menuDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get all Menus");
-                return StatusCode(500, "Failed to get all Menus");
-            }
-        }*/
-        // GET api/MenuController
-        [HttpGet]
-        public async Task<ActionResult<List<MenuDto>>> Get()
-        {
-            try
-            {
-                _logger.LogInformation("Attempting to retrieve all menus");
-
-                var menuItems = await _menuService.GetAsync();
-                _logger.LogInformation($"Retrieved {menuItems.Count} menus");
-
-                var menuDtos = _mapper.Map<List<MenuDto>>(menuItems);
-                _logger.LogInformation("Mapped menu items to MenuDto");
-
                 return Ok(menuDtos);
             }
             catch (Exception ex)
@@ -85,8 +64,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/MenuController/create-new-menu/5
-        [HttpPost("create-new-menu")]
+        // POST api/MenuController/new-menu-position
+        [HttpPost("new-menu-position")]
         public async Task<ActionResult<MenuDto>> Create(MenuDto menuDto)
         {
             if (!ModelState.IsValid)
@@ -109,9 +88,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // PUT api/MenuController/update-menu/5
-        [HttpPut("update-menu/{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, MenuDto updateDto)
+        // PUT api/MenuController/update-menu-position/5
+        [HttpPut("update-menu-position/{id:length(24)}")]
+        public async Task<IActionResult> Update(string id, MenuDto menuDto)
         {
             try
             {
@@ -119,8 +98,8 @@ namespace TastifyAPI.Controllers
                 if (existingMenu == null)
                     return NotFound();
 
-                existingMenu.Id = id;
-                _mapper.Map(updateDto, existingMenu);
+                menuDto.Id = id;
+                _mapper.Map(menuDto, existingMenu);
 
                 await _menuService.UpdateAsync(id, existingMenu);
 
@@ -133,8 +112,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // DELETE api/<MenuController>/delete-menu/5
-        [HttpDelete("delete-menu/{id:length(24)}")]
+        // DELETE api/<MenuController>/delete-menu-position/5
+        [HttpDelete("delete-menu-position/{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
