@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using TastifyAPI.DTOs;
-using TastifyAPI.DTOs.CreateDTOs;
-using TastifyAPI.DTOs.UpdateDTOs;
 using TastifyAPI.Entities;
 
 namespace TastifyAPI.Mapping

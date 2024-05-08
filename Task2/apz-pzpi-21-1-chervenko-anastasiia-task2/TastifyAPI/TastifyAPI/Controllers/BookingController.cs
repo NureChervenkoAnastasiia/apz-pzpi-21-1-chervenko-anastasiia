@@ -9,6 +9,7 @@ using TastifyAPI.Entities;
 using TastifyAPI.Services;
 
 //TODO: fix /get-bookings-by-date
+//TODO: /get-sorted-bookings-by-date
 
 namespace TastifyAPI.Controllers
 {

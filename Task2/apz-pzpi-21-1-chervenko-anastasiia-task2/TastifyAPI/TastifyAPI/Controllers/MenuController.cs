@@ -11,6 +11,11 @@ using TastifyAPI.Services;
 
 //TODO: /get-restaurant-menu
 //TODO: /get-position-ingridients
+//TODO: /get-all-drinks
+//TODO: /get-all-first-dishes
+//TODO: /get-all-second-dishes
+//TODO: /get-sorted-drinks-by-price
+//TODO: /get-sorted-dishes-by-price
 
 namespace TastifyAPI.Controllers
 {

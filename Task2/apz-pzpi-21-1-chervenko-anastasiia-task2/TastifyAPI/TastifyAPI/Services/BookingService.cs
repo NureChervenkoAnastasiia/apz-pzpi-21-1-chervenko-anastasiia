@@ -19,15 +19,15 @@ namespace TastifyAPI.Services
         public async Task<Booking?> GetByIdAsync(string id) =>
             await _bookingCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-        public async Task CreateAsync(Booking newbooking) =>
-            await _bookingCollection.InsertOneAsync(newbooking);
+        public async Task CreateAsync(Booking newBooking) =>
+            await _bookingCollection.InsertOneAsync(newBooking);
 
-        public async Task UpdateAsync(string id, Booking updatedbooking) =>
-            await _bookingCollection.ReplaceOneAsync(x => x.Id == id, updatedbooking);
+        public async Task UpdateAsync(string id, Booking updatedBooking) =>
+            await _bookingCollection.ReplaceOneAsync(x => x.Id == id, updatedBooking);
 
         public async Task DeleteAsync(string id) =>
             await _bookingCollection.DeleteOneAsync(x => x.Id == id);
-        public async Task<Booking?> GetByDateAsync(DateTime date) =>
+        public async Task<Booking> GetByDateAsync(DateTime date) =>
             await _bookingCollection.Find(x => x.DateTime == date).FirstOrDefaultAsync();
     }
 }

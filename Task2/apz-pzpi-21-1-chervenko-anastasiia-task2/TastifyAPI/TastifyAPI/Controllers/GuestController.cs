@@ -5,17 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
-using TastifyAPI.DTOs.CreateDTOs;
-using TastifyAPI.DTOs.UpdateDTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Services;
 
-//TODO:/
 //TODO:/login
 //TODO:/get-profile
-//TODO:/
-//TODO:
-//TODO:
+//TODO:/get-all-bookings
+//TODO:/get-all-reciepts
 
 namespace TastifyAPI.Controllers
 {

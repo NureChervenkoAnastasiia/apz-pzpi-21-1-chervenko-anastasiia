@@ -13,7 +13,6 @@ namespace TastifyAPI.Extensions
             services.AddAutoMapper(Assembly.GetAssembly(typeof(RestaurantProfile)));
             services.AddAutoMapper(Assembly.GetAssembly(typeof(MenuProfile)));
 
-
             return services;
         }
     }
