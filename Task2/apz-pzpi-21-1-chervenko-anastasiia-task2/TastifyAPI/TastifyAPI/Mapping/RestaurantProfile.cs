@@ -13,7 +13,7 @@ namespace TastifyAPI.Mapping
             CreateMap<Restaurant, RestaurantDto>();
             CreateMap<RestaurantDto, Restaurant>();
             CreateMap<RestaurantCreateDto, Restaurant>();
-            CreateMap<RestaurantUpdateDto, Restaurant>();
+           // CreateMap<RestaurantUpdateDto, Restaurant>();
         }
     }
 }

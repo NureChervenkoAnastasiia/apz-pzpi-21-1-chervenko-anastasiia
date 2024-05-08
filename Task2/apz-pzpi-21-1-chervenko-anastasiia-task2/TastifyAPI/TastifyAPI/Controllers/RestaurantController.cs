@@ -27,6 +27,7 @@ namespace TastifyAPI.Controllers
             _mapper = mapper;
         }
 
+        // GET api/RestaurantController
         [HttpGet]
         public async Task<ActionResult<List<RestaurantDto>>> Get()
         {
@@ -43,8 +44,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpGet("/{id:length(24)}")]
-        public async Task<ActionResult<RestaurantDto>> GetById(string id)
+        // GET api/RestaurantController/5
+        [HttpGet("restaurant/{id:length(24)}")]
+        public async Task<ActionResult<RestaurantDto>> GetRestaurantById(string id)
         {
             try
             {
@@ -62,6 +64,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        // POST api/RestaurantController/create-new-restaurant/5
         [HttpPost("create-new-restaurant")]
         public async Task<ActionResult<RestaurantDto>> Create(RestaurantDto restaurantDto)
         {
@@ -76,7 +79,7 @@ namespace TastifyAPI.Controllers
                 await _restaurantsService.CreateAsync(restaurant);
 
                 var createdRestaurantDto = _mapper.Map<RestaurantDto>(restaurant);
-                return CreatedAtAction(nameof(GetById), new { id = createdRestaurantDto.Id }, createdRestaurantDto);
+                return CreatedAtAction(nameof(GetRestaurantById), new { id = createdRestaurantDto.Id }, createdRestaurantDto);
             }
             catch (Exception ex)
             {
@@ -85,28 +88,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-restaurant/{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            try
-            {
-                var restaurant = await _restaurantsService.GetByIdAsync(id);
-                if (restaurant == null)
-                    return NotFound();
-
-                await _restaurantsService.RemoveAsync(id);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete restaurant with ID {0}", id);
-                return StatusCode(500, $"Failed to delete restaurant with ID {id}");
-            }
-        }
-
+        // PUT api/RestaurantController/update-restaurant/5
         [HttpPut("update-restaurant/{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, RestaurantUpdateDto updateDto)
+        public async Task<IActionResult> Update(string id, RestaurantDto updateDto)
         {
             try
             {
@@ -126,5 +110,27 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to update restaurant with ID {id}");
             }
         }
+
+        // DELETE api/<RestaurantController>/delete-restaurant/5
+        [HttpDelete("delete-restaurant/{id:length(24)}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                var restaurant = await _restaurantsService.GetByIdAsync(id);
+                if (restaurant == null)
+                    return NotFound();
+
+                await _restaurantsService.RemoveAsync(id);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete restaurant with ID {0}", id);
+                return StatusCode(500, $"Failed to delete restaurant with ID {id}");
+            }
+        }
+        
     }
 }

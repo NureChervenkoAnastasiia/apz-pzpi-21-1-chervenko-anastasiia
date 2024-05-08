@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace TastifyAPI.DTOs.UpdateDTOs
 {
-    public class RestaurantUpdateDto
+    /*public class RestaurantUpdateDto
     {
         public string? Name { get; set; }
         public string? Address { get; set; }
@@ -12,5 +12,5 @@ namespace TastifyAPI.DTOs.UpdateDTOs
         public string?  Info { get; set; }
         public List<string>? Cuisine { get; set; }
 
-    }
+    }*/
 }
