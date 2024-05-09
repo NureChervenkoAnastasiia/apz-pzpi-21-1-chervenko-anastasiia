@@ -13,9 +13,6 @@ namespace TastifyAPI.IServices
         Task<List<Menu>> GetSecondDishesForRestaurantAsync(string restaurantId);
         Task<List<Menu>> GetDrinksForRestaurantAsync(string restaurantId);
         Task<List<Menu>> GetRestaurantMenuAsync(string restaurantId);
-        //Task<List<Product>> GetPositionIngredientsAsync(string menuId);
-        //  Task GetRestaurantMenuAsync(string restaurantId);
-        // Task GetPositionIngredientsAsync(string positionId);
 
     }
 }

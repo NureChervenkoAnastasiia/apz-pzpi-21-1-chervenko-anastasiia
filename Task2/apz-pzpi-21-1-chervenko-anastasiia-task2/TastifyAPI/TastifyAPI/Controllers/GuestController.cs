@@ -137,13 +137,47 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/GuestController/make-coupon
-        [HttpPost("make-coupon")]
-        public ActionResult<CouponDto> MakeCoupon(int bonus)
+        /*// GET api/GuestController/get-all-receipts
+        [HttpGet("get-all-receipts")]
+        public async Task<ActionResult<List<OrderDto>>> GetAllReceipts(string guestId)
         {
             try
             {
-                var (discount, remainingBonus) = CalculateCoupon(bonus);
+                var receipts = await _guestService.GetAllGuestOrdersAsync(guestId);
+                var receiptDtos = _mapper.Map<List<OrderDto>>(receipts);
+                return Ok(receiptDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all receipts for guest with ID {0}", guestId);
+                return StatusCode(500, $"Failed to get all receipts for guest with ID {guestId}");
+            }
+        }*/
+
+        // GET api/GuestController/get-guests-sorted-by-name-and-bonus
+        [HttpGet("get-guests-sorted-by-name-and-bonus")]
+        public async Task<ActionResult<List<GuestDto>>> GetGuestsSortedByNameAndBonus()
+        {
+            try
+            {
+                var guests = await _guestService.GetSortedByNameAndBonusAsync();
+                var guestDtos = _mapper.Map<List<GuestDto>>(guests);
+                return Ok(guestDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get guests sorted by name and bonus");
+                return StatusCode(500, "Failed to get guests sorted by name and bonus");
+            }
+        }
+
+        // POST api/GuestController/make-coupon
+        [HttpPost("make-coupon")]
+        public async Task<ActionResult<CouponDto>> MakeCoupon(int bonus)
+        {
+            try
+            {
+                var (discount, remainingBonus) = await _guestService.CalculateCouponAsync(bonus);
                 var couponDto = new CouponDto { Discount = discount, Bonus = remainingBonus };
                 return Ok(couponDto);
             }
@@ -152,31 +186,6 @@ namespace TastifyAPI.Controllers
                 _logger.LogError(ex, "Failed to make coupon for bonus {0}", bonus);
                 return StatusCode(500, $"Failed to make coupon for bonus {bonus}");
             }
-        }
-
-        private (decimal, int) CalculateCoupon(int bonus)
-        {
-            decimal bonusCoefficient = 0.7m;
-            int discount = 0;
-
-            if (bonus < 100)
-            {
-                return (discount, bonus);
-            }
-
-            if (bonus <= 200)
-            {
-                bonusCoefficient = 0.5m;
-            }
-            else if (bonus <= 300)
-            {
-                bonusCoefficient = 0.6m;
-            }
-
-            discount = (int)(bonus * bonusCoefficient);
-            int remainingBonus = bonus - discount;
-
-            return (discount, remainingBonus);
         }
     }
 }

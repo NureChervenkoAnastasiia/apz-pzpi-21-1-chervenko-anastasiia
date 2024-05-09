@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
+using TastifyAPI.IServices;
 using TastifyAPI.Services;
 
 //TODO: /get-all-free-tables

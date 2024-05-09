@@ -8,8 +8,7 @@ using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Services;
 
-//TODO: /get-all-orders-items
-//TODO: check for adult
+//TODO: /get-all-restaurant-orders
 
 namespace TastifyAPI.Controllers
 {
@@ -128,5 +127,22 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to update order with ID {id}");
             }
         }
+
+        /*[HttpGet("get-all-restaurant-orders")]
+        public async Task<ActionResult<List<OrderDto>>> GetAllRestaurantOrders(string restaurantId)
+        {
+            try
+            {
+                var restaurantOrders = await _orderService.GetAllRestaurantOrdersAsync(restaurantId);
+                var orderDtos = _mapper.Map<List<OrderDto>>(restaurantOrders);
+                return Ok(orderDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all restaurant orders");
+                return StatusCode(500, "Failed to get all restaurant orders");
+            }
+        }*/
+
     }
 }

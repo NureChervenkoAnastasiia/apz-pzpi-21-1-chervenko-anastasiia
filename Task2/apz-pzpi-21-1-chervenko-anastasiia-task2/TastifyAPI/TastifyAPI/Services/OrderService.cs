@@ -12,6 +12,8 @@ namespace TastifyAPI.Services
     public class OrderService : IOrderService
     {
         private readonly IMongoCollection<Order> _orderCollection;
+        //private readonly IMongoCollection<Menu> _menuCollection;
+       // private readonly IMongoCollection<OrderItem> _orderItemCollection;
 
         public OrderService(IMongoDatabase database)
         {
@@ -32,5 +34,17 @@ namespace TastifyAPI.Services
 
         public async Task RemoveAsync(string id) =>
             await _orderCollection.DeleteOneAsync(x => x.Id == id);
+
+        /*
+        public async Task<List<Order>> GetAllRestaurantOrdersAsync(string restaurantId)
+        {
+            var menu = await _menuCollection.Find(menu => menu.RestaurantId == restaurantId).FirstOrDefaultAsync();
+            var orderItemsFromMenu = await _orderItemCollection.Find(orderItem => orderItem.MenuId == menu.Id).ToListAsync();
+            var orderIds = orderItemsFromMenu.Select(order => order.OrderId);
+            var orders = await _orderCollection.Find(order => orderIds.Contains(order.Id)).ToListAsync();
+            return orders;
+        }
+        */
+        
     }
 }

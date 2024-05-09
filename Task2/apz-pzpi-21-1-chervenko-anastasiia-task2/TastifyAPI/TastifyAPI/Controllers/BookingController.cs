@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
+using TastifyAPI.IServices;
 using TastifyAPI.Services;
 
 namespace TastifyAPI.Controllers
@@ -123,6 +124,23 @@ namespace TastifyAPI.Controllers
             {
                 _logger.LogError(ex, "Failed to update booking with ID {0}", id);
                 return StatusCode(500, $"Failed to update booking with ID {id}");
+            }
+        }
+
+        // GET api/GuestController/get-all-bookings
+        [HttpGet("get-all-guest-bookings")]
+        public async Task<ActionResult<List<BookingDto>>> GetAllGuestBookings(string guestId)
+        {
+            try
+            {
+                var bookings = await _bookingService.GetAllBookingsAsync(guestId);
+                var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
+                return Ok(bookingDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all bookings for guest with ID {0}", guestId);
+                return StatusCode(500, $"Failed to get all bookings for guest with ID {guestId}");
             }
         }
 

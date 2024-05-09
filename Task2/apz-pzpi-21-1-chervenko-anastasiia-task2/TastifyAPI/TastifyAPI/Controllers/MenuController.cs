@@ -130,7 +130,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // DELETE api/<MenuController>/delete-menu-position/5
+        // DELETE api/MenuController/delete-menu-position/5
         [HttpDelete("delete-menu-position/{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -201,65 +201,5 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to get all Second Dishes for Restaurant {restaurantId}");
             }
         }
-
-        // GET api/MenuController/get-position-ingredients/{id}
-        /*[HttpGet("get-position-ingredients/{id:length(24)}")]
-        public async Task<ActionResult<List<ProductDto>>> GetPositionIngredients(string positionId)
-        {
-            try
-            {
-                var positionIngredients = await _menuService.GetPositionIngredientsAsync(positionId);
-                if (positionIngredients == null)
-                    return NotFound();
-
-                var ingredientDtos = _mapper.Map<List<ProductDto>>(positionIngredients);
-                return Ok(ingredientDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get Ingredients for Position with ID {0}", positionId);
-                return StatusCode(500, $"Failed to get Ingredients for Position with ID {positionId}");
-            }
-        }*/
-
-        /* [HttpGet("get-position-ingredients/{id:length(24)}")]
-         public async Task<ActionResult<List<ProductDto>>> GetPositionIngredients(string id)
-         {
-             try
-             {
-                 var ingredients = await _menuService.GetPositionIngredientsAsync(id);
-                 if (ingredients == null)
-                     return NotFound();
-
-                 var ingredientDtos = _mapper.Map<List<ProductDto>>(ingredients);
-                 return Ok(ingredientDtos);
-             }
-             catch (Exception ex)
-             {
-                 _logger.LogError(ex, "Failed to get Ingredients for Position with ID {0}", id);
-                 return StatusCode(500, $"Failed to get Ingredients for Position with ID {id}");
-             }
-         }*/
-
-        /*[HttpGet("{menuId}/ingredients")]
-        public async Task<ActionResult<List<Product>>> GetPositionIngredients(string menuId)
-        {
-            try
-            {
-                var ingredients = await _menuService.GetPositionIngredientsAsync(menuId);
-                if (ingredients == null)
-                {
-                    return NotFound();
-                }
-
-                return ingredients;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while retrieving ingredients for menuId: {menuId}", menuId);
-                return StatusCode(500, "An error occurred while processing your request.");
-            }
-        }*/
-
     }
 }
