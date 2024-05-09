@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Threading.Tasks;
 using AutoMapper;
 using MongoDB.Driver;
@@ -13,16 +12,19 @@ namespace TastifyAPI.Services
     public class MenuService : IMenuService
     {
         private readonly IMongoCollection<Menu> _menuCollection;
-        private readonly ILogger<MenuService> _logger;
+       // private readonly IMongoCollection<Product> _productCollection;
 
-        public MenuService(IMongoDatabase database, ILogger<MenuService> logger)
+        public MenuService(IMongoDatabase database)
         {
             _menuCollection = database.GetCollection<Menu>("Menu");
-            _logger = logger;
+        //    _productCollection = productCollection;
         }
 
         public async Task<List<Menu>> GetAsync() =>
             await _menuCollection.Find(_ => true).ToListAsync();
+
+        public async Task<List<Menu>> GetRestaurantMenuAsync(string restaurantId) =>
+            await _menuCollection.Find(x => x.Id == restaurantId).ToListAsync();
 
         public async Task<Menu?> GetByIdAsync(string id) =>
             await _menuCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
@@ -35,5 +37,31 @@ namespace TastifyAPI.Services
 
         public async Task RemoveAsync(string id) =>
             await _menuCollection.DeleteOneAsync(x => x.Id == id);
+
+        public async Task<List<Menu>> GetFirstDishesForRestaurantAsync(string restaurantId) =>
+            await _menuCollection.Find(x => x.Type == "Перші страви" && x.RestaurantId == restaurantId).ToListAsync();
+
+        public async Task<List<Menu>> GetSecondDishesForRestaurantAsync(string restaurantId) =>
+            await _menuCollection.Find(x => x.Type == "Другі страви" && x.RestaurantId == restaurantId).ToListAsync();
+
+        public async Task<List<Menu>> GetDrinksForRestaurantAsync(string restaurantId) =>
+            await _menuCollection.Find(x => x.Type == "Напій" && x.RestaurantId == restaurantId).ToListAsync();
+
+       /* public async Task<List<Product>> GetPositionIngredientsAsync(string menuId)
+        {
+            var positionProductsCollection = _menuCollection.Database.GetCollection<PositionProduct>("PositionProducts");
+
+            var positionProducts = await positionProductsCollection.Find(x => x.MenuId == menuId).ToListAsync();
+            if (positionProducts == null || !positionProducts.Any())
+            {
+                return null; // Если нет продуктов для указанного блюда, возвращаем null или пустой список
+            }
+
+            var productIds = positionProducts.Select(x => x.ProductId);
+            var ingredients = await _productCollection.Find(x => productIds.Contains(x.Id)).ToListAsync();
+
+            return ingredients;
+        }*/
     }
 }
+

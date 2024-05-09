@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace TastifyAPI.Entities
 {
-    public class Order_item
+    public class PositionProduct
     {
         [BsonId]
         [BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
@@ -11,11 +11,8 @@ namespace TastifyAPI.Entities
         [BsonElement("menu_id"), BsonRepresentation(BsonType.ObjectId)]
         public string? MenuId { get; set; }
 
-        [BsonElement("order_id"), BsonRepresentation(BsonType.ObjectId)]
-        public string? OrderId { get; set; }
-
-        [BsonElement("amount"), BsonRepresentation(BsonType.Int32)]
-        public Int32? Amount { get; set; }
+        [BsonElement("product_id"), BsonRepresentation(BsonType.ObjectId)]
+        public string? ProductId { get; set; }
 
     }
 }

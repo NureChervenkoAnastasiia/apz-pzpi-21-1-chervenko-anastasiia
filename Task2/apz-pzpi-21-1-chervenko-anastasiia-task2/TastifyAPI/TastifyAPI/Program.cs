@@ -9,6 +9,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Hosting;
 using TastifyAPI.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using TastifyAPI.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,10 @@ builder.Services.AddSingleton<ScheduleService>();
 builder.Services.AddSingleton<StaffService>();
 builder.Services.AddSingleton<TableService>();
 builder.Services.AddSingleton<OrderService>();
+//builder.Services.AddSingleton<IMenuService, MenuService>();
+//builder.Services.AddSingleton<IPositionProductService, PositionProductService>();
+//
+
 
 //builder.Services.AddScoped<IPasswordHasher<Staff>, PasswordHasher<Staff>>();
 builder.Services.AddAutoMapperProfiles();
@@ -50,6 +55,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddLogging();
 //builder.Services.AddScoped<JwtService>();
 //builder.Services.AddJWTTokenAuthentication(builder.Configuration);
+//builder.Services.AddScoped<IMenuService, MenuService>();
 
 
 var app = builder.Build();

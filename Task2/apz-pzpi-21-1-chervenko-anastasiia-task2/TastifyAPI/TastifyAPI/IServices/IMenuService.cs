@@ -9,5 +9,13 @@ namespace TastifyAPI.IServices
         Task CreateAsync(Menu newMenu);
         Task UpdateAsync(string id, Menu updatedMenu);
         Task RemoveAsync(string id);
+        Task<List<Menu>> GetFirstDishesForRestaurantAsync(string restaurantId);
+        Task<List<Menu>> GetSecondDishesForRestaurantAsync(string restaurantId);
+        Task<List<Menu>> GetDrinksForRestaurantAsync(string restaurantId);
+        Task<List<Menu>> GetRestaurantMenuAsync(string restaurantId);
+        //Task<List<Product>> GetPositionIngredientsAsync(string menuId);
+        //  Task GetRestaurantMenuAsync(string restaurantId);
+        // Task GetPositionIngredientsAsync(string positionId);
+
     }
 }

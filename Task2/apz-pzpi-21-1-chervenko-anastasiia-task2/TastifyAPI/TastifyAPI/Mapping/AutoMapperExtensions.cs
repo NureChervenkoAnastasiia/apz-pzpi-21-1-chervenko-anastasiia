@@ -10,9 +10,11 @@ namespace TastifyAPI.Extensions
     {
         public static IServiceCollection AddAutoMapperProfiles(this IServiceCollection services)
         {
-            services.AddAutoMapper(Assembly.GetAssembly(typeof(RestaurantProfile)));
-            services.AddAutoMapper(Assembly.GetAssembly(typeof(MenuProfile)));
-
+            services.AddAutoMapper(
+                Assembly.GetAssembly(typeof(RestaurantProfile)), 
+                Assembly.GetAssembly(typeof(MenuProfile)), 
+                Assembly.GetAssembly(typeof(PositionProductProfile)),
+                Assembly.GetAssembly(typeof(ProductProfile)));
             return services;
         }
     }
