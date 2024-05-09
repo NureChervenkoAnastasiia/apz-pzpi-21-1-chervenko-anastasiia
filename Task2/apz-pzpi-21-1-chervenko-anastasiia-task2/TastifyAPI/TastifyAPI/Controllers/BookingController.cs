@@ -8,9 +8,6 @@ using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Services;
 
-//TODO: fix /get-bookings-by-date
-//TODO: /get-sorted-bookings-by-date
-
 namespace TastifyAPI.Controllers
 {
     [ApiController]
@@ -106,7 +103,6 @@ namespace TastifyAPI.Controllers
             }
         }
 
-
         [HttpPut("update-booking/{id:length(24)}")]
         public async Task<IActionResult> Update(string id, BookingDto bookingDto)
         {
@@ -131,13 +127,16 @@ namespace TastifyAPI.Controllers
         }
 
         [HttpGet("get-bookins-by-date")]
-        public async Task<ActionResult<List<BookingDto>>> GetByDate([FromQuery] DateTime date)
+        public async Task<ActionResult<BookingDto>> GetByDate([FromQuery] DateTime date)
         {
             try
             {
-                var bookings = await _bookingService.GetByDateAsync(date);
-                var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
-                return Ok(bookingDtos);
+                var booking = await _bookingService.GetByDateAsync(date);
+                if (booking == null)
+                    return NotFound($"Booking for date {date} not found");
+
+                var bookingDto = _mapper.Map<BookingDto>(booking);
+                return Ok(bookingDto);
             }
             catch (Exception ex)
             {
@@ -146,5 +145,20 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        [HttpGet("get-sorted-bookings-by-date")]
+        public async Task<ActionResult<List<BookingDto>>> GetSortedBookingsByDate([FromQuery] DateTime date)
+        {
+            try
+            {
+                var sortedBookings = await _bookingService.GetSortedByDateAsync(date);
+                var bookingDtos = _mapper.Map<List<BookingDto>>(sortedBookings);
+                return Ok(bookingDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get sorted bookings by date");
+                return StatusCode(500, "Failed to get sorted bookings by date");
+            }
+        }
     }
 }

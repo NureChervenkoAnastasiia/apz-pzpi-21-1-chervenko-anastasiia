@@ -27,7 +27,17 @@ namespace TastifyAPI.Services
 
         public async Task DeleteAsync(string id) =>
             await _bookingCollection.DeleteOneAsync(x => x.Id == id);
+
         public async Task<Booking> GetByDateAsync(DateTime date) =>
             await _bookingCollection.Find(x => x.DateTime == date).FirstOrDefaultAsync();
+
+        public async Task<List<Booking>> GetSortedByDateAsync(DateTime date)
+        {
+            var sortDefinition = Builders<Booking>.Sort.Ascending(x => x.DateTime);
+            return await _bookingCollection.Find(_ => true)
+                .Sort(sortDefinition)
+                .ToListAsync();
+        }
+
     }
 }

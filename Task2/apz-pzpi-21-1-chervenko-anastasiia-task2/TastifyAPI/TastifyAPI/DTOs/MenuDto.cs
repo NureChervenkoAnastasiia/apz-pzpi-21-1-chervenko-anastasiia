@@ -18,5 +18,7 @@ namespace TastifyAPI.DTOs
         public string? Info { get; set; }
 
         public string? Type { get; set; }
+
+        public List<ObjectId>? Ingredients { get; set; }
     }
 }

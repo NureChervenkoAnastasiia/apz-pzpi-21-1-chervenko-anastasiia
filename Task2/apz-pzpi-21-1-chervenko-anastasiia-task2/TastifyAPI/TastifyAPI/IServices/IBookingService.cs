@@ -10,6 +10,7 @@ namespace TastifyAPI.IServices
         Task UpdateAsync(string id, Booking updatedBooking);
         Task DeleteAsync(string id);
         Task<Booking> GetByDateAsync(DateTime date);
+        Task<List<Booking>> GetSortedByDateAsync(DateTime date);
 
     }
 }

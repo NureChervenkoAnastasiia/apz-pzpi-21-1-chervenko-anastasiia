@@ -26,5 +26,8 @@ namespace TastifyAPI.Entities
 
         [BsonElement("type"), BsonRepresentation(BsonType.String)]
         public string? Type { get; set; }
+
+        [BsonElement("ingredients")]
+        public List<ObjectId>? Ingredients { get; set; }
     }
 }
