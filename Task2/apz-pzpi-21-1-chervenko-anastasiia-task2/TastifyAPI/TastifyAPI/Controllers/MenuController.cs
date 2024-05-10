@@ -201,5 +201,27 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to get all Second Dishes for Restaurant {restaurantId}");
             }
         }
+/*
+        [HttpGet("{menuId}/dish-orders")]
+        public async Task<ActionResult<IEnumerable<DishOrderDto>>> GetDishOrders(string menuId)
+        {
+            // Получаем все блюда из меню
+            var dishes = await _menuService.GetMenuDishesAsync(menuId);
+
+            // Получаем все заказы для данного меню
+            var orderItems = await _orderItemService.GetOrderItemsByMenuIdAsync(menuId);
+
+            // Группируем заказы по ID блюда
+            var dishOrders = orderItems.GroupBy(item => item.DishId)
+                                       .Select(group => new DishOrderDto
+                                       {
+                                           DishId = group.Key,
+                                           DishName = dishes.FirstOrDefault(dish => dish.Id == group.Key)?.Name,
+                                           OrderCount = group.Count()
+                                       })
+                                       .ToList();
+
+            return Ok(dishOrders);
+        }*/
     }
 }
