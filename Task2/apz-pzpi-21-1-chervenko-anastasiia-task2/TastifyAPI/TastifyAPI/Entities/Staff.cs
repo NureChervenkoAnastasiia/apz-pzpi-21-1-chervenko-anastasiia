@@ -18,8 +18,8 @@ namespace TastifyAPI.Entities
         [BsonElement("hourly_salary"), BsonRepresentation(BsonType.Double)]
         public double? HourlySalary { get; set; }
 
-        [BsonElement("mobile_number"), BsonRepresentation(BsonType.Int64)]
-        public Int64? Telephone { get; set; }
+        [BsonElement("mobile_number"), BsonRepresentation(BsonType.String)]
+        public string? Phone { get; set; }
 
         [BsonElement("attendance_card"), BsonRepresentation(BsonType.Int32)]
         public Int32? AttendanceCard { get; set; }
@@ -29,6 +29,9 @@ namespace TastifyAPI.Entities
 
         [BsonElement("password_hash"), BsonRepresentation(BsonType.String)]
         public string? PasswordHash { get; set; }
+
+        [BsonElement("restaurant_id"), BsonRepresentation(BsonType.ObjectId)]
+        public string? RestaurantId { get; set; }
 
     }
 }

@@ -9,6 +9,7 @@ namespace TastifyAPI.Mapping
         public StaffProfile()
         {
             CreateMap<Staff, StaffDto>();
+            CreateMap<StaffDto, Staff>();
         }
     }
 }

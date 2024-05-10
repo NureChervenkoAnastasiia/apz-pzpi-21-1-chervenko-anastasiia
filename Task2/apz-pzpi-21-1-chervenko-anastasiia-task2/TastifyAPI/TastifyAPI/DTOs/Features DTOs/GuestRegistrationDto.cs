@@ -8,7 +8,7 @@ namespace TastifyAPI.DTOs.Features_DTOs
         [StringLength(50, MinimumLength = 2)]
         public string Name { get; set; }
 
-        [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Mobile number must contain exactly 10 digits")]
+        [RegularExpression(@"^[0-9]{12}$", ErrorMessage = "Mobile number must contain exactly 10 digits")]
         public string Phone { get; set; }
 
         [Required]

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
+using TastifyAPI.IServices;
 using TastifyAPI.Services;
-
-//TODO: /login
+using TastifyAPI.DTOs.Features_DTOs;
 
 namespace TastifyAPI.Controllers
 {
@@ -17,30 +17,28 @@ namespace TastifyAPI.Controllers
     [Route("api/[controller]")]
     public class StaffController : ControllerBase
     {
-        /*private readonly StaffService _staffService;
+        private readonly StaffService _staffService;
         private readonly ILogger<StaffController> _logger;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<Staff> _passwordHasher;
-        private readonly JwtService _jwtService;
 
-        public StaffController(StaffService staffService, ILogger<StaffController> logger,
-            IMapper mapper, IPasswordHasher<Staff> passwordHasher,JwtService jwtService)
+        public StaffController(StaffService staffService, ILogger<StaffController> logger, IMapper mapper, IPasswordHasher<Staff> passwordHasher)
         {
             _staffService = staffService;
             _logger = logger;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
-            _jwtService = jwtService;
         }
 
-        [HttpGet]
+        // GET api/StaffController/all-staff
+        [HttpGet("all-staff")]
         public async Task<ActionResult<List<StaffDto>>> Get()
         {
             try
             {
-                var staff = await _staffService.GetAsync();
-                var staffDtos = _mapper.Map<List<StaffDto>>(staff);
-                return Ok(staffDtos);
+                var staffList = await _staffService.GetAsync();
+                var staffDtoList = _mapper.Map<List<StaffDto>>(staffList);
+                return Ok(staffDtoList);
             }
             catch (Exception ex)
             {
@@ -49,8 +47,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<StaffDto>> Get(string id)
+        // GET api/staff-profile/5
+        [HttpGet("staff-profile/{id:length(24)}")]
+        public async Task<ActionResult<StaffDto>> GetById(string id)
         {
             try
             {
@@ -68,29 +67,105 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("create")]
-        public async Task<ActionResult<StaffDto>> CreateNewStaff(StaffCreateDto createDto)
+        // POST api/StaffController/register
+        [HttpPost("staff-register")]
+        public async Task<ActionResult> Register(StaffRegistrationDto staffRegistrationDto)
         {
             try
             {
-                var staff = _mapper.Map<Staff>(createDto);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-                staff.PasswordHash = _passwordHasher.HashPassword(staff, createDto.PasswordHash);
+                if (await _staffService.AnyAsync(s => s.Login == staffRegistrationDto.Login))
+                {
+                    return BadRequest("Staff with such login already exists");
+                }
 
-                await _staffService.CreateAsync(staff);
+                var newStaff = new Staff
+                {
+                    Name = staffRegistrationDto.Name,
+                    Position = staffRegistrationDto.Position,
+                    HourlySalary = staffRegistrationDto.HourlySalary,
+                    Phone = staffRegistrationDto.Phone,
+                    AttendanceCard = 0,
+                    Login = staffRegistrationDto.Login
+                };
 
-                var createdStaffDto = _mapper.Map<StaffDto>(staff);
-                return CreatedAtAction(nameof(Get), new { id = createdStaffDto.Id }, createdStaffDto);
+                newStaff.PasswordHash = _passwordHasher.HashPassword(newStaff, staffRegistrationDto.Password);
+
+                await _staffService.CreateAsync(newStaff);
+
+                return Ok("New staff registration was successful");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create new staff");
-                return StatusCode(500, "Failed to create new staff");
+                _logger.LogError(ex, "An error occurred during staff registration");
+                return StatusCode(500, ex.Message);
             }
         }
 
+        // POST api/StaffController/login
+        [HttpPost("staff-login")]
+        public async Task<IActionResult> Login(StaffLoginDto staffLoginDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-        [HttpDelete("delete/{id:length(24)}")]
+                var staff = await _staffService.GetByLoginAsync(staffLoginDto.Login);
+
+                if (staff == null)
+                {
+                    return BadRequest("Staff with such login does not exist");
+                }
+
+                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(staff, staff.PasswordHash, staffLoginDto.Password);
+
+                if (passwordVerificationResult != PasswordVerificationResult.Success)
+                {
+                    return BadRequest("Invalid login or password");
+                }
+
+                return Ok(staff);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred during login");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // PUT api/StaffController/update-staff-profile/5
+        [HttpPut("update-staff-profile/{id:length(24)}")]
+        public async Task<IActionResult> Update(string id, StaffDto staffDto)
+        {
+            try
+            {
+                var existingStaff = await _staffService.GetByIdAsync(id);
+                if (existingStaff == null)
+                    return NotFound();
+
+                staffDto.Id = id;
+                _mapper.Map(staffDto, existingStaff);
+
+                await _staffService.UpdateAsync(id, existingStaff);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update staff with ID {0}", id);
+                return StatusCode(500, $"Failed to update staff with ID {id}");
+            }
+        }
+
+        // DELETE api/StaffController/delete-staff-profile/5
+        [HttpDelete("delete-staff-profile/{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -109,31 +184,5 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to delete staff with ID {id}");
             }
         }
-
-        /*
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(StaffLoginDto loginDto)
-        {
-            try
-            {
-                // Получаем работника по логину
-                var staff = await _staffService.GetByLoginAsync(loginDto.Login);
-
-                // Проверяем, найден ли работник и соответствует ли пароль
-                if (staff == null || !_passwordHasher.VerifyHashedPassword(staff, staff.PasswordHash, loginDto.PasswordHash).Equals(PasswordVerificationResult.Success))
-                    return Unauthorized();
-
-                // Генерируем JWT токен для работника
-                var token = _jwtService.GenerateToken(staff.Id);
-
-                return Ok(token);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to login staff");
-                return StatusCode(500, "Failed to login staff");
-            }
-        }
-        */
     }
 }

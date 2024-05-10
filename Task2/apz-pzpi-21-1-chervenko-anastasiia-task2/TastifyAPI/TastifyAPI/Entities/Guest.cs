@@ -13,7 +13,7 @@ namespace TastifyAPI.Entities
         public string? Name { get; set; }
 
         [BsonElement("mobile_number"), BsonRepresentation(BsonType.String)]
-        public string? MobileNumber { get; set; }
+        public string? Phone { get; set; }
 
         [BsonElement("bonus"), BsonRepresentation(BsonType.Int32)]
         public Int32 Bonus { get; set; }

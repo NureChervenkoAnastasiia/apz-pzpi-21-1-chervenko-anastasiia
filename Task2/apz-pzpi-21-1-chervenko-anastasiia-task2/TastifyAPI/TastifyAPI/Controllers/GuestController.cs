@@ -86,7 +86,7 @@ namespace TastifyAPI.Controllers
                 var newGuest = new Guest
                 {
                     Name = guestRegistrationDto.Name,
-                    MobileNumber = guestRegistrationDto.Phone,
+                    Phone = guestRegistrationDto.Phone,
                     Email = guestRegistrationDto.Email,
                     Bonus = 0, 
                     Login = guestRegistrationDto.Login
