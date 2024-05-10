@@ -127,8 +127,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // GET api/GuestController/get-all-bookings
-        [HttpGet("get-all-guest-bookings")]
+        // GET api/GuestController/all-guest-bookings
+        [HttpGet("all-guest-bookings")]
         public async Task<ActionResult<List<BookingDto>>> GetAllGuestBookings(string guestId)
         {
             try
