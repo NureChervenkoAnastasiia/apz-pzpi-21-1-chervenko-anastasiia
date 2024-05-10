@@ -31,7 +31,7 @@ namespace TastifyAPI.Controllers
             ILogger<GuestController> logger, 
             IMapper mapper, 
             IPasswordHasher<Guest> passwordHasher,
-             IConfiguration config)
+            IConfiguration config)
         {
             _guestService = GuestService;
             _logger = logger;

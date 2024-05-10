@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.IServices;
 using TastifyAPI.Services;
+using TastifyAPI.Helpers;
 using TastifyAPI.DTOs.Features_DTOs;
 
 namespace TastifyAPI.Controllers
@@ -21,16 +23,24 @@ namespace TastifyAPI.Controllers
         private readonly ILogger<StaffController> _logger;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<Staff> _passwordHasher;
+        private readonly JwtService _jwtService;
 
-        public StaffController(StaffService staffService, ILogger<StaffController> logger, IMapper mapper, IPasswordHasher<Staff> passwordHasher)
+        public StaffController(
+            StaffService staffService,
+            ILogger<StaffController> logger,
+            IMapper mapper,
+            IPasswordHasher<Staff> passwordHasher,
+            IConfiguration config)
         {
             _staffService = staffService;
             _logger = logger;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _jwtService = new JwtService(config);
         }
 
         // GET api/StaffController/all-staff
+        [Authorize(Roles = Roles.Administrator)]
         [HttpGet("all-staff")]
         public async Task<ActionResult<List<StaffDto>>> Get()
         {
@@ -48,6 +58,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/staff-profile/5
+        [Authorize(Roles = Roles.Administrator)]
         [HttpGet("staff-profile/{id:length(24)}")]
         public async Task<ActionResult<StaffDto>> GetById(string id)
         {
@@ -68,6 +79,7 @@ namespace TastifyAPI.Controllers
         }
 
         // POST api/StaffController/register
+        [Authorize(Roles = Roles.Administrator)]
         [HttpPost("staff-register")]
         public async Task<ActionResult> Register(StaffRegistrationDto staffRegistrationDto)
         {
@@ -131,7 +143,8 @@ namespace TastifyAPI.Controllers
                     return BadRequest("Invalid login or password");
                 }
 
-                return Ok(staff);
+                var token = _jwtService.GenerateStaffToken(staff);
+                return Ok(new { Token = token });
             }
             catch (Exception ex)
             {
@@ -141,6 +154,7 @@ namespace TastifyAPI.Controllers
         }
 
         // PUT api/StaffController/update-staff-profile/5
+        [Authorize(Roles = Roles.Administrator)]
         [HttpPut("update-staff-profile/{id:length(24)}")]
         public async Task<IActionResult> Update(string id, StaffDto staffDto)
         {
@@ -165,6 +179,7 @@ namespace TastifyAPI.Controllers
         }
 
         // DELETE api/StaffController/delete-staff-profile/5
+        [Authorize(Roles = Roles.Administrator)]
         [HttpDelete("delete-staff-profile/{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
