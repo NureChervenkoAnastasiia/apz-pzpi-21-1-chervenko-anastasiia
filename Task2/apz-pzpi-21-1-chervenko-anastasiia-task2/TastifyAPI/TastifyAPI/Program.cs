@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using TastifyAPI.Data;
 using TastifyAPI.Entities;
-using TastifyAPI.Models;
 using TastifyAPI.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Hosting;

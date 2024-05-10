@@ -2,7 +2,6 @@
 using MongoDB.Driver;
 using TastifyAPI.Entities;
 using TastifyAPI.IServices;
-using TastifyAPI.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

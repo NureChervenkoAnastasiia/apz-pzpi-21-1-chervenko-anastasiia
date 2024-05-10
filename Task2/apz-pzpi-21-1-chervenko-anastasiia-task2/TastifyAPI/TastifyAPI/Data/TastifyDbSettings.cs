@@ -1,4 +1,4 @@
-﻿namespace TastifyAPI.Models
+﻿namespace TastifyAPI.Data
 {
     public class TastifyDbSettings
     {

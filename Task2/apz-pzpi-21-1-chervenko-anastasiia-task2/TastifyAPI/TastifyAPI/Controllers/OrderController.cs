@@ -128,7 +128,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        /*[HttpGet("get-all-restaurant-orders")]
+        [HttpGet("get-all-restaurant-orders")]
         public async Task<ActionResult<List<OrderDto>>> GetAllRestaurantOrders(string restaurantId)
         {
             try
@@ -142,7 +142,23 @@ namespace TastifyAPI.Controllers
                 _logger.LogError(ex, "Failed to get all restaurant orders");
                 return StatusCode(500, "Failed to get all restaurant orders");
             }
-        }*/
+        }
+
+        [HttpGet("get-all-restaurant-orders1")]
+        public async Task<ActionResult<List<OrderDto>>> GetAllRestaurantOrders1(string restaurantId)
+        {
+            try
+            {
+                var restaurantOrders = await _orderService.GetAllRestaurantOrders1Async(restaurantId);
+                var orderDtos = _mapper.Map<List<OrderDto>>(restaurantOrders);
+                return Ok(orderDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all restaurant orders");
+                return StatusCode(500, "Failed to get all restaurant orders");
+            }
+        }
 
     }
 }

@@ -1,17 +1,14 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
+using TastifyAPI.DTOs.Features_DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Services;
-
-//TODO:/login
-//TODO:/get-profile
-//TODO:/get-all-bookings
-//TODO:/get-all-reciepts
 
 namespace TastifyAPI.Controllers
 {
@@ -22,17 +19,19 @@ namespace TastifyAPI.Controllers
         private readonly GuestService _guestService;
         private readonly ILogger<GuestController> _logger;
         private readonly IMapper _mapper;
+        private readonly IPasswordHasher<Guest> _passwordHasher;
 
 
-        public GuestController(GuestService GuestService, ILogger<GuestController> logger, IMapper mapper)
+        public GuestController(GuestService GuestService, ILogger<GuestController> logger, IMapper mapper, IPasswordHasher<Guest> passwordHasher)
         {
             _guestService = GuestService;
             _logger = logger;
             _mapper = mapper;
+            _passwordHasher = passwordHasher;
         }
 
-        // GET api/GuestController/get-all-guests
-        [HttpGet("get-all-guests")]
+        // GET api/GuestController/all-guests
+        [HttpGet("all-guests")]
         public async Task<ActionResult<List<GuestDto>>> Get()
         {
             try
@@ -48,8 +47,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // GET api/GuestController/5
-        [HttpGet("get-guest-prifile/{id:length(24)}")]
+        // GET api/guest-profile/5
+        [HttpGet("guest-profile/{id:length(24)}")]
         public async Task<ActionResult<GuestDto>> GetById(string id)
         {
             try
@@ -68,27 +67,75 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/GuestController/register-new-guest/5
-        [HttpPost("register-new-guest")]
-        public async Task<ActionResult<GuestDto>> Create(GuestDto guestDto)
+        // POST api/GuestController/register
+        [HttpPost("guest-register")]
+        public async Task<ActionResult> Register(GuestRegistrationDto guestRegistrationDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             try
             {
-                var Guest = _mapper.Map<Guest>(guestDto);
-                await _guestService.CreateAsync(Guest);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-                var createdGuestDto = _mapper.Map<GuestDto>(Guest);
-                return CreatedAtAction(nameof(GetById), new { id = createdGuestDto.Id }, createdGuestDto);
+                if (await _guestService.AnyAsync(g => g.Email == guestRegistrationDto.Email))
+                {
+                    return BadRequest("Guest with such email already exists");
+                }
+
+                var newGuest = new Guest
+                {
+                    Name = guestRegistrationDto.Name,
+                    MobileNumber = guestRegistrationDto.Phone,
+                    Email = guestRegistrationDto.Email,
+                    Bonus = 0, 
+                    Login = guestRegistrationDto.Login
+                };
+
+                newGuest.PasswordHash = _passwordHasher.HashPassword(newGuest, guestRegistrationDto.Password);
+
+                await _guestService.CreateAsync(newGuest);
+
+                return Ok("New guest registration was successful");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create new Guest");
-                return StatusCode(500, "Failed to create new Guest");
+                _logger.LogError(ex, "An error occurred during guest registration");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        // POST api/GuestController/login
+        [HttpPost("guest-login")]
+        public async Task<IActionResult> Login(GuestLoginDto guestLoginDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var guest = await _guestService.GetByLoginAsync(guestLoginDto.Login);
+
+                if (guest == null)
+                {
+                    return BadRequest("Guest with such login does not exist");
+                }
+
+                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, guest.PasswordHash, guestLoginDto.Password);
+
+                if (passwordVerificationResult != PasswordVerificationResult.Success)
+                {
+                    return BadRequest("Invalid login or password");
+                }
+
+                return Ok(guest);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred during login");
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -137,25 +184,8 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        /*// GET api/GuestController/get-all-receipts
-        [HttpGet("get-all-receipts")]
-        public async Task<ActionResult<List<OrderDto>>> GetAllReceipts(string guestId)
-        {
-            try
-            {
-                var receipts = await _guestService.GetAllGuestOrdersAsync(guestId);
-                var receiptDtos = _mapper.Map<List<OrderDto>>(receipts);
-                return Ok(receiptDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get all receipts for guest with ID {0}", guestId);
-                return StatusCode(500, $"Failed to get all receipts for guest with ID {guestId}");
-            }
-        }*/
-
-        // GET api/GuestController/get-guests-sorted-by-name-and-bonus
-        [HttpGet("get-guests-sorted-by-name-and-bonus")]
+        // GET api/GuestController/sorted-by-name-and-bonus
+        [HttpGet("sorted-by-name-and-bonus")]
         public async Task<ActionResult<List<GuestDto>>> GetGuestsSortedByNameAndBonus()
         {
             try

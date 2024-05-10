@@ -2,7 +2,6 @@
 using MongoDB.Driver;
 using TastifyAPI.Data;
 using TastifyAPI.Entities;
-using TastifyAPI.Models;
 
 namespace TastifyAPI.Services
 {
