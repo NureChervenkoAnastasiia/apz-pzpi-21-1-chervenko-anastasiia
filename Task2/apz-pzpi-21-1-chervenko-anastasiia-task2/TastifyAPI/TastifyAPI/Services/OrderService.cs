@@ -17,7 +17,6 @@ namespace TastifyAPI.Services
         {
             _orderCollection = database.GetCollection<Order>("Orders");
         }
-
         public async Task<List<Order>> GetAsync() =>
             await _orderCollection.Find(_ => true).ToListAsync();
 

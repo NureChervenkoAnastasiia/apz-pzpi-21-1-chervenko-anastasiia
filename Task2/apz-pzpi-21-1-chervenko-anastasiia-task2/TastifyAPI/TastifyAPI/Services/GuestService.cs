@@ -1,17 +1,21 @@
 ﻿using MongoDB.Driver;
 using System.Linq.Expressions;
 using TastifyAPI.Entities;
+using TastifyAPI.DTOs;
 using TastifyAPI.IServices;
+using AutoMapper;
 
 namespace TastifyAPI.Services
 {
     public class GuestService : IGuestService
     {
         private readonly IMongoCollection<Guest> _guestCollection;
+        private readonly IMapper _mapper;
 
-        public GuestService(IMongoDatabase database)
+        public GuestService(IMongoDatabase database, IMapper mapper)
         {
             _guestCollection = database.GetCollection<Guest>("Guests");
+            _mapper = mapper;
         }
 
         public async Task<List<Guest>> GetAsync() =>
@@ -26,11 +30,24 @@ namespace TastifyAPI.Services
         public async Task<Guest> GetByLoginAsync(string login) =>
             await _guestCollection.Find(guest => guest.Login == login).FirstOrDefaultAsync();
 
-        public async Task CreateAsync(Guest newguest) =>
-            await _guestCollection.InsertOneAsync(newguest);
+        /*public async Task CreateAsync(GuestDto newGuestDto) =>
+            await _guestCollection.InsertOneAsync(newGuestDto);
 
-        public async Task UpdateAsync(string id, Guest updatedguest) =>
-            await _guestCollection.ReplaceOneAsync(x => x.Id == id, updatedguest);
+        public async Task UpdateAsync(string id, GuestDto updatedGuestDto) =>
+            await _guestCollection.ReplaceOneAsync(x => x.Id == id, updatedGuestDto);*/
+
+        public async Task CreateAsync(Guest newGuest)
+        {
+            var guest = _mapper.Map<Guest>(newGuest);
+            await _guestCollection.InsertOneAsync(guest);
+        }
+
+        public async Task UpdateAsync(string id, Guest updatedGuest)
+        {
+            var guest = _mapper.Map<Guest>(updatedGuest);
+            guest.Id = id;
+            await _guestCollection.ReplaceOneAsync(x => x.Id == id, guest);
+        }
 
         public async Task RemoveAsync(string id) =>
             await _guestCollection.DeleteOneAsync(x => x.Id == id);

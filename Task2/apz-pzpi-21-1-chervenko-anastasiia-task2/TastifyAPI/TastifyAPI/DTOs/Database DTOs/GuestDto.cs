@@ -12,7 +12,7 @@ namespace TastifyAPI.DTOs
         public string? Name { get; set; }
 
         [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Mobile number must contain exactly 10 digits")]
-        public string? MobileNumber { get; set; }
+        public string? Phone { get; set; }
 
         [Range(0, int.MaxValue, ErrorMessage = "Bonus must be a positive number")]
         public Int32 Bonus { get; set; }

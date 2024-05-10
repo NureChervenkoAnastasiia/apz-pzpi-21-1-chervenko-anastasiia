@@ -14,7 +14,7 @@ namespace TastifyAPI.DTOs
         public string? Address { get; set; }
 
         [Phone(ErrorMessage = "Invalid phone number format")]
-        public string? Telephone { get; set; }
+        public string? Phone { get; set; }
 
         [EmailAddress(ErrorMessage = "Invalid email address format")]
         public string? Email { get; set; }

@@ -37,8 +37,9 @@ builder.Services.AddAutoMapperProfiles();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerWithJwtAuthorization();
 builder.Services.AddLogging();
-
+builder.Services.AddSetSecurity(builder.Configuration);
 
 var app = builder.Build();
 
@@ -47,6 +48,19 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tastify API V1");
+        c.RoutePrefix = "";
+        c.OAuthClientId("swagger");
+        c.OAuthAppName("Swagger UI");
+    });
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();

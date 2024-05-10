@@ -9,18 +9,6 @@ namespace TastifyAPI.BuildInjections
     {
         internal static void AddServices(this IServiceCollection services)
         {
-            services.AddSingleton<IMongoCollection<Menu>>(sp =>
-            {
-                var database = sp.GetRequiredService<IMongoDatabase>();
-                return database.GetCollection<Menu>("Menus");
-            });
-
-            services.AddSingleton<IMongoCollection<OrderItem>>(sp =>
-            {
-                var database = sp.GetRequiredService<IMongoDatabase>();
-                return database.GetCollection<OrderItem>("OrderItems");
-            });
-
             services.AddScoped<BookingService>();
             services.AddScoped<GuestService>();
             services.AddScoped<MenuService>();
