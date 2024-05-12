@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TastifyAPI.DTOs;
+using TastifyAPI.DTOs.Features_DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.IServices;
 using TastifyAPI.Services;
@@ -186,7 +187,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/drinks-for-restaurant/5
-        [HttpGet("-drinks-for-restaurant/{restaurantId}")]
+        [HttpGet("drinks-for-restaurant/{restaurantId}")]
         public async Task<ActionResult<List<MenuDto>>> GetDrinksForRestaurant(string restaurantId)
         {
             try
@@ -194,6 +195,22 @@ namespace TastifyAPI.Controllers
                 var drinks = await _menuService.GetDrinksForRestaurantAsync(restaurantId);
                 var drinkDtos = _mapper.Map<List<MenuDto>>(drinks);
                 return Ok(drinkDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get all Second Dishes for Restaurant {0}", restaurantId);
+                return StatusCode(500, $"Failed to get all Second Dishes for Restaurant {restaurantId}");
+            }
+        }
+
+        // GET api/MenuController/second-dishes-for-restaurant/5
+        [HttpGet("popular-dishes-for-restaurant/{restaurantId}")]
+        public async Task<ActionResult<List<DishPopularityDto>>> GetMostPopularDishes(string restaurantId)
+        {
+            try
+            {
+                var popularDishes = await _menuService.GetMostPopularDishesAsync(restaurantId);
+                return Ok(popularDishes);
             }
             catch (Exception ex)
             {

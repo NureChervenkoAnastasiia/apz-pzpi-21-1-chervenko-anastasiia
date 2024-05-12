@@ -1,4 +1,5 @@
-﻿using TastifyAPI.Entities;
+﻿using TastifyAPI.DTOs.Features_DTOs;
+using TastifyAPI.Entities;
 
 namespace TastifyAPI.IServices
 {
@@ -13,6 +14,7 @@ namespace TastifyAPI.IServices
         Task<List<Menu>> GetSecondDishesForRestaurantAsync(string restaurantId);
         Task<List<Menu>> GetDrinksForRestaurantAsync(string restaurantId);
         Task<List<Menu>> GetRestaurantMenuAsync(string restaurantId);
+        Task<List<DishPopularityDto>> GetMostPopularDishesAsync(string restaurantId);
 
     }
 }
