@@ -11,6 +11,7 @@ using TastifyAPI.DTOs;
 using TastifyAPI.DTOs.Features_DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Helpers;
+using TastifyAPI.IServices;
 using TastifyAPI.Services;
 
 namespace TastifyAPI.Controllers
@@ -20,30 +21,27 @@ namespace TastifyAPI.Controllers
     public class GuestController : ControllerBase
     {
         private readonly GuestService _guestService;
-
+        private readonly JwtService _jwtService;
         private readonly ILogger<GuestController> _logger;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<Guest> _passwordHasher;
-        private readonly JwtService _jwtService;
 
-
-        public GuestController(GuestService GuestService, 
-            ILogger<GuestController> logger, 
-            IMapper mapper, 
-            IPasswordHasher<Guest> passwordHasher,
-            IConfiguration config)
+        public GuestController(GuestService guestService,
+                               ILogger<GuestController> logger,
+                               IPasswordHasher<Guest> passwordHasher,
+                               IMapper mapper,
+                               IConfiguration config)
         {
-            _guestService = GuestService;
+            _guestService = guestService;
             _logger = logger;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
             _jwtService = new JwtService(config);
         }
 
-        // GET api/GuestController/all-guests
         [Authorize(Roles = Roles.Administrator)]
         [HttpGet]
-        public async Task<ActionResult<List<GuestDto>>> Get()
+        public async Task<ActionResult<List<GuestDto>>> GetAllGuests()
         {
             try
             {
@@ -58,10 +56,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // GET api/guest-profile/5
-        [Authorize(Roles = Roles.Guest)]
+        [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
         [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<GuestDto>> GetById(string id)
+        public async Task<ActionResult<GuestDto>> GetGuestById(string id)
         {
             try
             {
@@ -79,39 +76,60 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/GuestController/register
-        [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpGet("sorted-by-name-and-bonus")]
+        public async Task<ActionResult<List<GuestDto>>> GetGuestsSortedByNameAndBonus()
+        {
+            try
+            {
+                var guests = await _guestService.GetSortedByNameAndBonusAsync();
+                var guestDtos = _mapper.Map<List<GuestDto>>(guests);
+                return Ok(guestDtos);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get guests sorted by name and bonus");
+                return StatusCode(500, "Failed to get guests sorted by name and bonus");
+            }
+        }
+
+        [Authorize(Roles = Roles.Guest)]
+        [HttpPost("make-coupon")]
+        public async Task<ActionResult<CouponDto>> MakeCoupon(int bonus)
+        {
+            try
+            {
+                var (discount, remainingBonus) = await _guestService.CalculateCouponAsync(bonus);
+                var couponDto = new CouponDto { Discount = discount, Bonus = remainingBonus };
+                return Ok(couponDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to make coupon for bonus {0}", bonus);
+                return StatusCode(500, $"Failed to make coupon for bonus {bonus}");
+            }
+        }
+
         [HttpPost("register")]
         public async Task<ActionResult> Register(GuestRegistrationDto guestRegistrationDto)
         {
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
 
                 if (await _guestService.AnyAsync(g => g.Email == guestRegistrationDto.Email))
-                {
                     return BadRequest("Guest with such email already exists");
-                }
 
-                var newGuest = new Guest
-                {
-                    Name = guestRegistrationDto.Name,
-                    Phone = guestRegistrationDto.Phone,
-                    Email = guestRegistrationDto.Email,
-                    Bonus = 0, 
-                    Login = guestRegistrationDto.Login
-                };
+                var newGuest = _mapper.Map<Guest>(guestRegistrationDto);
 
+                newGuest.Bonus = 0;
                 newGuest.PasswordHash = _passwordHasher.HashPassword(newGuest, guestRegistrationDto.Password);
 
                 await _guestService.CreateAsync(newGuest);
 
                 var token = _jwtService.GenerateGuestToken(newGuest);
                 return Ok(new { Token = token });
-                //return Ok("New guest registration was successful");
             }
             catch (Exception ex)
             {
@@ -120,23 +138,19 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/GuestController/login
         [HttpPost("login")]
         public async Task<IActionResult> Login(GuestLoginDto guestLoginDto)
         {
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
 
                 var guest = await _guestService.GetByLoginAsync(guestLoginDto.Login);
 
                 if (guest == null)
-                {
-                    return BadRequest("Guest with such login does not exist");
-                }
+                    return BadRequest("Guest with such login does not exists");
+
 
                 var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, guest.PasswordHash, guestLoginDto.Password);
 
@@ -155,10 +169,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // PUT api/GuestController/update-guest-profile/5
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, GuestDto guestDto)
+        public async Task<IActionResult> UpdateGuest(string id, GuestDto guestDto)
         {
             try
             {
@@ -171,7 +184,7 @@ namespace TastifyAPI.Controllers
 
                 await _guestService.UpdateAsync(id, existingGuest);
 
-                return NoContent();
+                return Ok("Guest updated successfully!");
             }
             catch (Exception ex)
             {
@@ -180,10 +193,9 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // DELETE api/<GuestController>/delete-guest-profile/5
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
         [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> DeleteGuest(string id)
         {
             try
             {
@@ -193,48 +205,12 @@ namespace TastifyAPI.Controllers
 
                 await _guestService.RemoveAsync(id);
 
-                return NoContent();
+                return Ok("Guest deleted successfully!");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to delete Guest with ID {0}", id);
                 return StatusCode(500, $"Failed to delete Guest with ID {id}");
-            }
-        }
-
-        // GET api/GuestController/sorted-by-name-and-bonus
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpGet("sorted-by-name-and-bonus")]
-        public async Task<ActionResult<List<GuestDto>>> GetGuestsSortedByNameAndBonus()
-        {
-            try
-            {
-                var guests = await _guestService.GetSortedByNameAndBonusAsync();
-                var guestDtos = _mapper.Map<List<GuestDto>>(guests);
-                return Ok(guestDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get guests sorted by name and bonus");
-                return StatusCode(500, "Failed to get guests sorted by name and bonus");
-            }
-        }
-
-        // POST api/GuestController/make-coupon
-        [Authorize(Roles = Roles.Guest)]
-        [HttpPost("make-coupon")]
-        public async Task<ActionResult<CouponDto>> MakeCoupon(int bonus)
-        {
-            try
-            {
-                var (discount, remainingBonus) = await _guestService.CalculateCouponAsync(bonus);
-                var couponDto = new CouponDto { Discount = discount, Bonus = remainingBonus };
-                return Ok(couponDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to make coupon for bonus {0}", bonus);
-                return StatusCode(500, $"Failed to make coupon for bonus {bonus}");
             }
         }
     }

@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TastifyAPI.Helpers;
 
 namespace TastifyAPI.Controllers
 {
@@ -18,37 +20,53 @@ namespace TastifyAPI.Controllers
             _backupFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "Backups");
         }
 
-        [HttpPost("create")]
+        private async Task RunProcessAsync(string fileName, string arguments)
+        {
+            using (var process = new Process())
+            {
+                process.StartInfo.FileName = fileName;
+                process.StartInfo.Arguments = arguments;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.CreateNoWindow = true;
+                process.Start();
+
+                await process.WaitForExitAsync();
+            }
+        }
+
+        private string GetBackupFileName()
+        {
+            return $"backup_TastifyDB_{DateTime.Now:yyyyMMddHHmmss}";
+        }
+
+        private async Task<string> CreateBackupFolderAsync(string backupFileName)
+        {
+            var backupFolder = Path.Combine(_backupFolderPath, backupFileName);
+            Directory.CreateDirectory(backupFolder);
+            await Task.Delay(2000);
+            return backupFolder;
+        }
+
+        private string GetLatestBsonFile(string backupFolder)
+        {
+            var bsonFiles = Directory.GetFiles(backupFolder, "*.bson");
+            return bsonFiles.FirstOrDefault();
+        }
+
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpPost("export-data")]
         public async Task<IActionResult> CreateBackup()
         {
             try
             {
-                if (!Directory.Exists(_backupFolderPath))
-                {
-                    Directory.CreateDirectory(_backupFolderPath);
-                }
+                var backupFileName = GetBackupFileName();
+                var backupFolder = await CreateBackupFolderAsync(backupFileName);
 
-                var backupFileName = $"backup_TastifyDB_{DateTime.Now:yyyyMMddHHmmss}";
-                var backupFolder = Path.Combine(_backupFolderPath, backupFileName);
-
-                var processInfo = new ProcessStartInfo
-                {
-                    FileName = "mongodump",
-                    Arguments = $"--db TastifyDB --out \"{backupFolder}\"",
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                };
-
-                using (var process = Process.Start(processInfo))
-                {
-                    process.WaitForExit();
-                }
-
-                await Task.Delay(2000);
+                var processArgs = $"--db TastifyDB --out \"{backupFolder}\"";
+                await RunProcessAsync("mongodump", processArgs);
 
                 backupFolder = Path.Combine(backupFolder, "TastifyDB");
-                var bsonFiles = Directory.GetFiles(backupFolder, "*.bson");
-                var bsonFile = bsonFiles.FirstOrDefault();
+                var bsonFile = GetLatestBsonFile(backupFolder);
 
                 if (string.IsNullOrEmpty(bsonFile))
                 {
@@ -66,6 +84,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        [Authorize(Roles = Roles.Administrator)]
         [HttpGet("list")]
         public IActionResult GetBackupList()
         {
@@ -88,25 +107,15 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("restore")]
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpPost("import-data")]
         public async Task<IActionResult> RestoreBackup([FromForm] string backupFileName)
         {
             try
             {
                 var backupFilePath = Path.Combine(_backupFolderPath, backupFileName);
-
-                var processInfo = new ProcessStartInfo
-                {
-                    FileName = "mongorestore",
-                    Arguments = $"--drop --db TastifyDB \"{backupFilePath}\"",
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                };
-
-                using (var process = Process.Start(processInfo))
-                {
-                    process.WaitForExit();
-                }
+                var processArgs = $"--drop --db TastifyDB \"{backupFilePath}\"";
+                await RunProcessAsync("mongorestore", processArgs);
 
                 return Ok("Database restored successfully");
             }
@@ -117,4 +126,3 @@ namespace TastifyAPI.Controllers
         }
     }
 }
-

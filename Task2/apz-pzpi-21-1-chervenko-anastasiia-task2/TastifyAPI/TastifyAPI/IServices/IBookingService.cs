@@ -12,6 +12,6 @@ namespace TastifyAPI.IServices
         Task<List<Booking>> GetAllBookingsAsync(string guestId);
         Task<Booking> GetByDateAsync(DateTime date);
         Task<List<Booking>> GetSortedByDateAsync(DateTime date);
-
+       
     }
 }

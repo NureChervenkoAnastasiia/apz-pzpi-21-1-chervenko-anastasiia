@@ -8,6 +8,7 @@ namespace TastifyAPI.Entities
         [BsonId]
         [BsonElement("_id"), BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
+
         [BsonElement("table_id"), BsonRepresentation(BsonType.ObjectId)]
         public string? TableId { get; set; }
 

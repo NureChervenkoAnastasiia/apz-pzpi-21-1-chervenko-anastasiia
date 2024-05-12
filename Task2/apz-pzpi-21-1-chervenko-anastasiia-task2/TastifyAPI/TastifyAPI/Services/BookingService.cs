@@ -30,7 +30,6 @@ namespace TastifyAPI.Services
             var booking = await _bookingCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
             booking.BookingDateTime = booking.BookingDateTime.ToLocalTime();
-        
 
             return booking;
         }
@@ -42,23 +41,21 @@ namespace TastifyAPI.Services
             await _bookingCollection.InsertOneAsync(newBooking);
         }
 
-
         public async Task UpdateAsync(string id, Booking updatedBooking)
         {
-
             updatedBooking.BookingDateTime = updatedBooking.BookingDateTime.ToUniversalTime();
 
             await _bookingCollection.ReplaceOneAsync(x => x.Id == id, updatedBooking);
         }
 
-        public async Task DeleteAsync(string id) =>
-            await _bookingCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task<Booking> GetByDateAsync(DateTime date)
+        {
+            date = date.ToUniversalTime();
 
-        public async Task<List<Booking>> GetAllBookingsAsync(string guestId) =>
-            await _bookingCollection.Find(x => x.GuestId == guestId).ToListAsync();
+            var booking = await _bookingCollection.Find(x => x.BookingDateTime == date).FirstOrDefaultAsync();
 
-        public async Task<Booking> GetByDateAsync(DateTime date) =>
-            await _bookingCollection.Find(x => x.BookingDateTime == date).FirstOrDefaultAsync();
+            return booking;
+        }
 
         public async Task<List<Booking>> GetSortedByDateAsync(DateTime date)
         {
@@ -67,5 +64,9 @@ namespace TastifyAPI.Services
                 .Sort(sortDefinition)
                 .ToListAsync();
         }
+        public async Task<List<Booking>> GetAllBookingsAsync(string guestId) =>
+            await _bookingCollection.Find(x => x.GuestId == guestId).ToListAsync();
+        public async Task DeleteAsync(string id) =>
+            await _bookingCollection.DeleteOneAsync(x => x.Id == id);        
     }
 }

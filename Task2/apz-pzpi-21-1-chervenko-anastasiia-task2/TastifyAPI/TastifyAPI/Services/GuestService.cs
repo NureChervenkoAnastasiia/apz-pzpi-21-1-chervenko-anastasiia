@@ -30,11 +30,13 @@ namespace TastifyAPI.Services
         public async Task<Guest> GetByLoginAsync(string login) =>
             await _guestCollection.Find(guest => guest.Login == login).FirstOrDefaultAsync();
 
-        /*public async Task CreateAsync(GuestDto newGuestDto) =>
-            await _guestCollection.InsertOneAsync(newGuestDto);
-
-        public async Task UpdateAsync(string id, GuestDto updatedGuestDto) =>
-            await _guestCollection.ReplaceOneAsync(x => x.Id == id, updatedGuestDto);*/
+        public async Task<List<Guest>> GetSortedByBonusAndNameAsync()
+        {
+            return await _guestCollection.Find(_ => true)
+                .SortBy(g => g.Bonus)
+                .ThenBy(g => g.Name)
+                .ToListAsync();
+        }
 
         public async Task CreateAsync(Guest newGuest)
         {
@@ -48,9 +50,6 @@ namespace TastifyAPI.Services
             guest.Id = id;
             await _guestCollection.ReplaceOneAsync(x => x.Id == id, guest);
         }
-
-        public async Task RemoveAsync(string id) =>
-            await _guestCollection.DeleteOneAsync(x => x.Id == id);
 
         public async Task<(int discount, int remainingBonus)> CalculateCouponAsync(int bonus)
         {
@@ -77,12 +76,7 @@ namespace TastifyAPI.Services
             return (discount, remainingBonus);
         }
 
-        public async Task<List<Guest>> GetSortedByNameAndBonusAsync()
-        {
-            var guests = await _guestCollection.Find(_ => true).ToListAsync();
-            return guests.OrderBy(g => g.Name).ThenByDescending(g => g.Bonus).ToList();
-        }
-
-        
+        public async Task RemoveAsync(string id) =>
+            await _guestCollection.DeleteOneAsync(x => x.Id == id);
     }
 }
