@@ -30,7 +30,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/all-menu-positions
-        [HttpGet("/all-menu-positions")]
+        [HttpGet]
         public async Task<ActionResult<List<MenuDto>>> Get()
         {
             try
@@ -47,7 +47,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/all-menu-positions-in-restaurant
-        [HttpGet("/all-menu-positions-in-restaurant")]
+        [HttpGet("restaurant/{restaurantId}/all")]
         public async Task<ActionResult<List<MenuDto>>> GetRestaurantMenu(string restaurantId)
         {
             try
@@ -84,7 +84,7 @@ namespace TastifyAPI.Controllers
         }
 
         // POST api/MenuController/new-menu-position
-        [HttpPost("new-menu-position")]
+        [HttpPost]
         public async Task<ActionResult<MenuDto>> Create(MenuDto menuDto)
         {
             if (!ModelState.IsValid)
@@ -108,7 +108,7 @@ namespace TastifyAPI.Controllers
         }
 
         // PUT api/MenuController/update-menu-position/5
-        [HttpPut("update-menu-position/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, MenuDto menuDto)
         {
             try
@@ -132,7 +132,7 @@ namespace TastifyAPI.Controllers
         }
 
         // DELETE api/MenuController/delete-menu-position/5
-        [HttpDelete("delete-menu-position/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -153,7 +153,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/all-first-dishes-for-restaurant/5
-        [HttpGet("first-dishes-for-restaurant/{restaurantId}")]
+        [HttpGet("restaurant/{restaurantId}/first-dishes")]
         public async Task<ActionResult<List<MenuDto>>> GetFirstDishesForRestaurant(string restaurantId)
         {
             try
@@ -170,7 +170,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/second-dishes-for-restaurant/5
-        [HttpGet("second-dishes-for-restaurant/{restaurantId}")]
+        [HttpGet("restaurant/{restaurantId}/second-dishes")]
         public async Task<ActionResult<List<MenuDto>>> GetSecondDishesForRestaurant(string restaurantId)
         {
             try
@@ -187,7 +187,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/drinks-for-restaurant/5
-        [HttpGet("drinks-for-restaurant/{restaurantId}")]
+        [HttpGet("restaurant/{restaurantId}/drinks")]
         public async Task<ActionResult<List<MenuDto>>> GetDrinksForRestaurant(string restaurantId)
         {
             try
@@ -204,7 +204,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/MenuController/second-dishes-for-restaurant/5
-        [HttpGet("popular-dishes-for-restaurant/{restaurantId}")]
+        [HttpGet("restaurant/{restaurantId}/dishes-rating")]
         public async Task<ActionResult<List<DishPopularityDto>>> GetMostPopularDishes(string restaurantId)
         {
             try

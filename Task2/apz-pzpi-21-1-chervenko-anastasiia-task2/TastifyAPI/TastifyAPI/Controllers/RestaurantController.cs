@@ -43,7 +43,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/RestaurantController/5
-        [HttpGet("restaurant/{id:length(24)}")]
+        [HttpGet("{id:length(24)}")]
         public async Task<ActionResult<RestaurantDto>> GetRestaurantById(string id)
         {
             try
@@ -63,7 +63,7 @@ namespace TastifyAPI.Controllers
         }
 
         // POST api/RestaurantController/create-new-restaurant/5
-        [HttpPost("create-new-restaurant")]
+        [HttpPost]
         public async Task<ActionResult<RestaurantDto>> Create(RestaurantDto restaurantDto)
         {
             if (!ModelState.IsValid)
@@ -87,7 +87,7 @@ namespace TastifyAPI.Controllers
         }
 
         // PUT api/RestaurantController/update-restaurant/5
-        [HttpPut("update-restaurant/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, RestaurantDto restaurantDto)
         {
             try
@@ -111,7 +111,7 @@ namespace TastifyAPI.Controllers
         }
 
         // DELETE api/<RestaurantController>/delete-restaurant/5
-        [HttpDelete("delete-restaurant/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try

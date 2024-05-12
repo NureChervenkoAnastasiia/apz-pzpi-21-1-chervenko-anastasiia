@@ -64,7 +64,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("new-table")]
+        [HttpPost]
         public async Task<ActionResult<TableDto>> Create(TableDto tableDto)
         {
             if (!ModelState.IsValid)
@@ -87,7 +87,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-table/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -108,7 +108,7 @@ namespace TastifyAPI.Controllers
         }
 
 
-        [HttpPut("update-table/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, TableDto tableDto)
         {
             try

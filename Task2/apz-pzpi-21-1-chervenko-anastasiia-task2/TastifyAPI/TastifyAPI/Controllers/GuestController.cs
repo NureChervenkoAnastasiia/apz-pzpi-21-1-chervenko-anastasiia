@@ -42,7 +42,7 @@ namespace TastifyAPI.Controllers
 
         // GET api/GuestController/all-guests
         [Authorize(Roles = Roles.Administrator)]
-        [HttpGet("all-guests")]
+        [HttpGet]
         public async Task<ActionResult<List<GuestDto>>> Get()
         {
             try
@@ -60,7 +60,7 @@ namespace TastifyAPI.Controllers
 
         // GET api/guest-profile/5
         [Authorize(Roles = Roles.Guest)]
-        [HttpGet("guest-profile/{id:length(24)}")]
+        [HttpGet("{id:length(24)}")]
         public async Task<ActionResult<GuestDto>> GetById(string id)
         {
             try
@@ -81,7 +81,7 @@ namespace TastifyAPI.Controllers
 
         // POST api/GuestController/register
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
-        [HttpPost("guest-register")]
+        [HttpPost("register")]
         public async Task<ActionResult> Register(GuestRegistrationDto guestRegistrationDto)
         {
             try
@@ -121,7 +121,7 @@ namespace TastifyAPI.Controllers
         }
 
         // POST api/GuestController/login
-        [HttpPost("guest-login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(GuestLoginDto guestLoginDto)
         {
             try
@@ -157,7 +157,7 @@ namespace TastifyAPI.Controllers
 
         // PUT api/GuestController/update-guest-profile/5
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
-        [HttpPut("update-guest-profile/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, GuestDto guestDto)
         {
             try
@@ -179,67 +179,10 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to update Guest with ID {id}");
             }
         }
-        
-        /*
-        [HttpPost("guest-login")]
-        public async Task<IActionResult> Login(GuestLoginDto guestLoginDto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                var guest = await _guestService.GetByLoginAsync(guestLoginDto.Login);
-
-                if (guest == null)
-                {
-                    return BadRequest("Guest with such login does not exist");
-                }
-
-                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, guest.PasswordHash, guestLoginDto.Password);
-
-                if (passwordVerificationResult != PasswordVerificationResult.Success)
-                {
-                    return BadRequest("Invalid login or password");
-                }
-
-                var guestDto = _mapper.Map<GuestDto>(guest); // Map entity to DTO
-                return Ok(guestDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred during login");
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        [HttpPut("update-guest-profile/{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, GuestDto guestDto)
-        {
-            try
-            {
-                var existingGuest = await _guestService.GetByIdAsync(id);
-                if (existingGuest == null)
-                    return NotFound();
-
-                _mapper.Map(guestDto, existingGuest); // Map DTO to entity
-
-                await _guestService.UpdateAsync(id, existingGuest);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update Guest with ID {0}", id);
-                return StatusCode(500, $"Failed to update Guest with ID {id}");
-            }
-        }*/
 
         // DELETE api/<GuestController>/delete-guest-profile/5
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
-        [HttpDelete("delete-guest-profile/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try

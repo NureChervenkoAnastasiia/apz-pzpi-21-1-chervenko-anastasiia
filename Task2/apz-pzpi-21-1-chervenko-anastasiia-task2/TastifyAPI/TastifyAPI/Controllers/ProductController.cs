@@ -63,7 +63,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("new-product")]
+        [HttpPost]
         public async Task<ActionResult<ProductDto>> Create(ProductDto productDto)
         {
             if (!ModelState.IsValid)
@@ -86,7 +86,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-product/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -107,7 +107,7 @@ namespace TastifyAPI.Controllers
         }
 
 
-        [HttpPut("update-product/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, ProductDto productDto)
         {
             try

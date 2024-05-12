@@ -62,7 +62,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("new-booking")]
+        [HttpPost]
         public async Task<ActionResult<BookingDto>> Create(BookingDto bookingDto)
         {
             if (!ModelState.IsValid)
@@ -87,7 +87,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPut("update-booking/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, BookingDto bookingDto)
         {
             try
@@ -110,7 +110,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-booking/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -131,7 +131,7 @@ namespace TastifyAPI.Controllers
         }
 
         // GET api/GuestController/all-guest-bookings
-        [HttpGet("all-guest-bookings")]
+        [HttpGet("guest-bookings/{id:length(24)}")]
         public async Task<ActionResult<List<BookingDto>>> GetAllGuestBookings(string guestId)
         {
             try
@@ -147,7 +147,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpGet("get-bookins-by-date")]
+        [HttpGet("bookins-by-date")]
         public async Task<ActionResult<BookingDto>> GetByDate([FromQuery] DateTime date)
         {
             try
@@ -166,7 +166,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpGet("get-sorted-bookings-by-date")]
+        [HttpGet("sorted-bookings-by-date")]
         public async Task<ActionResult<List<BookingDto>>> GetSortedBookingsByDate([FromQuery] DateTime date)
         {
             try

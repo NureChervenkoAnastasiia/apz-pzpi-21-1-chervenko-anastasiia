@@ -60,7 +60,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("new-order")]
+        [HttpPost]
         public async Task<ActionResult<OrderDto>> Create(OrderDto orderDto)
         {
             if (!ModelState.IsValid)
@@ -83,7 +83,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-order/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -103,7 +103,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPut("update-order/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, OrderDto orderDto)
         {
             try

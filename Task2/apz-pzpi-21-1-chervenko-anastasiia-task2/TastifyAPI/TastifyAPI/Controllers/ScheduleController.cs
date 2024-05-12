@@ -60,7 +60,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpPost("new-schedule")]
+        [HttpPost]
         public async Task<ActionResult<ScheduleDto>> Create(ScheduleDto scheduleDto)
         {
             if (!ModelState.IsValid)
@@ -83,7 +83,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("delete-schedule/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
@@ -104,7 +104,7 @@ namespace TastifyAPI.Controllers
         }
 
 
-        [HttpPut("update-schedule/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, ScheduleDto scheduleDto)
         {
             try
@@ -127,7 +127,7 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpGet("/get-staff-schedule/{id:length(24)}")]
+        [HttpGet("staff/{id:length(24)}")]
         public async Task<ActionResult<ScheduleDto>> GetByStaff(string id)
         {
             try

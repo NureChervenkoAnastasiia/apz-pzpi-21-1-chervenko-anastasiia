@@ -41,7 +41,7 @@ namespace TastifyAPI.Controllers
 
         // GET api/StaffController/all-staff
         [Authorize(Roles = Roles.Administrator)]
-        [HttpGet("all-staff")]
+        [HttpGet]
         public async Task<ActionResult<List<StaffDto>>> Get()
         {
             try
@@ -59,7 +59,7 @@ namespace TastifyAPI.Controllers
 
         // GET api/staff-profile/5
         [Authorize(Roles = Roles.Administrator)]
-        [HttpGet("staff-profile/{id:length(24)}")]
+        [HttpGet("{id:length(24)}")]
         public async Task<ActionResult<StaffDto>> GetById(string id)
         {
             try
@@ -80,7 +80,7 @@ namespace TastifyAPI.Controllers
 
         // POST api/StaffController/register
         [Authorize(Roles = Roles.Administrator)]
-        [HttpPost("staff-register")]
+        [HttpPost("register")]
         public async Task<ActionResult> Register(StaffRegistrationDto staffRegistrationDto)
         {
             try
@@ -119,7 +119,7 @@ namespace TastifyAPI.Controllers
         }
 
         // POST api/StaffController/login
-        [HttpPost("staff-login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(StaffLoginDto staffLoginDto)
         {
             try
@@ -155,7 +155,7 @@ namespace TastifyAPI.Controllers
 
         // PUT api/StaffController/update-staff-profile/5
         [Authorize(Roles = Roles.Administrator)]
-        [HttpPut("update-staff-profile/{id:length(24)}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> Update(string id, StaffDto staffDto)
         {
             try
@@ -180,7 +180,7 @@ namespace TastifyAPI.Controllers
 
         // DELETE api/StaffController/delete-staff-profile/5
         [Authorize(Roles = Roles.Administrator)]
-        [HttpDelete("delete-staff-profile/{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public async Task<IActionResult> Delete(string id)
         {
             try
