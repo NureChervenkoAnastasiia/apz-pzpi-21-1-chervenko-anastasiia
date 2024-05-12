@@ -15,7 +15,7 @@ namespace TastifyAPI.Entities
         public string? GuestId { get; set; }
 
         [BsonElement("date_time"), BsonRepresentation(BsonType.DateTime)]
-        public DateTime DateTime { get; set; }
+        public DateTime BookingDateTime { get; set; }
 
         [BsonElement("persons"), BsonRepresentation(BsonType.Int32)]
         public Int32? PersonsCount { get; set; }

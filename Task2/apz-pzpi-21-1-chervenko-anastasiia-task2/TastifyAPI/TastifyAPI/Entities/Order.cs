@@ -15,7 +15,7 @@ namespace TastifyAPI.Entities
         public string? TableId { get; set; }
 
         [BsonElement("date_time"), BsonRepresentation(BsonType.DateTime)]
-        public DateTime? DateTime { get; set; }
+        public DateTime? OrderDateTime { get; set; }
 
         [BsonElement("comment"), BsonRepresentation(BsonType.String)]
         public string? Comment { get; set; }

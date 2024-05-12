@@ -33,6 +33,7 @@ namespace TastifyAPI.Controllers
             {
                 var bookings = await _bookingService.GetAsync();
                 var bookingDtos = _mapper.Map<List<BookingDto>>(bookings);
+
                 return Ok(bookingDtos);
             }
             catch (Exception ex)
@@ -50,7 +51,7 @@ namespace TastifyAPI.Controllers
                 var booking = await _bookingService.GetByIdAsync(id);
                 if (booking == null)
                     return NotFound();
-
+ 
                 var bookingDto = _mapper.Map<BookingDto>(booking);
                 return Ok(bookingDto);
             }
@@ -72,35 +73,17 @@ namespace TastifyAPI.Controllers
             try
             {
                 var booking = _mapper.Map<Booking>(bookingDto);
+
                 await _bookingService.CreateAsync(booking);
 
                 var createdBookingDto = _mapper.Map<BookingDto>(booking);
+
                 return CreatedAtAction(nameof(GetById), new { id = createdBookingDto.Id }, createdBookingDto);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create new booking");
                 return StatusCode(500, "Failed to create new booking");
-            }
-        }
-
-        [HttpDelete("delete-booking/{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            try
-            {
-                var booking = await _bookingService.GetByIdAsync(id);
-                if (booking == null)
-                    return NotFound($"Booking with ID {id} not found");
-
-                await _bookingService.DeleteAsync(id);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete booking with ID {0}", id);
-                return StatusCode(500, "Failed to delete booking");
             }
         }
 
@@ -124,6 +107,26 @@ namespace TastifyAPI.Controllers
             {
                 _logger.LogError(ex, "Failed to update booking with ID {0}", id);
                 return StatusCode(500, $"Failed to update booking with ID {id}");
+            }
+        }
+
+        [HttpDelete("delete-booking/{id:length(24)}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                var booking = await _bookingService.GetByIdAsync(id);
+                if (booking == null)
+                    return NotFound($"Booking with ID {id} not found");
+
+                await _bookingService.DeleteAsync(id);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete booking with ID {0}", id);
+                return StatusCode(500, "Failed to delete booking");
             }
         }
 
