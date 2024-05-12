@@ -20,6 +20,7 @@ namespace TastifyAPI.BuildInjections
             services.AddScoped<TableService>();
             services.AddScoped<IPasswordHasher<Guest>, PasswordHasher<Guest>>();
             services.AddScoped<IPasswordHasher<Staff>, PasswordHasher<Staff>>();
+
         }
     }
 }

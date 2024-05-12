@@ -126,5 +126,24 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to update schedule with ID {id}");
             }
         }
+
+        [HttpGet("/get-staff-schedule/{id:length(24)}")]
+        public async Task<ActionResult<ScheduleDto>> GetByStaff(string id)
+        {
+            try
+            {
+                var schedule = await _scheduleService.GetByStaffAsync(id);
+                if (schedule == null)
+                    return NotFound();
+
+                var scheduleDto = _mapper.Map<ScheduleDto>(schedule);
+                return Ok(scheduleDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get schedule with ID {0}", id);
+                return StatusCode(500, $"Failed to get schedule with ID {id}");
+            }
+        }
     }
 }

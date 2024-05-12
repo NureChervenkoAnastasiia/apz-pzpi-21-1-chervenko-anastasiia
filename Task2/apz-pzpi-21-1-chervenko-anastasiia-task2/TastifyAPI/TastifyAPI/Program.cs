@@ -34,6 +34,7 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 
 builder.Services.AddServices();
 builder.Services.AddAutoMapperProfiles();
+builder.Services.AddMongoCollections();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

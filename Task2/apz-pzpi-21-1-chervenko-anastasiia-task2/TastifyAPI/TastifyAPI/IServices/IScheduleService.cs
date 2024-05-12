@@ -9,5 +9,7 @@ namespace TastifyAPI.IServices
         Task CreateAsync(Schedule newSchedule);
         Task UpdateAsync(string id, Schedule updatedSchedule);
         Task RemoveAsync(string id);
+        Task<Schedule?> GetByStaffAsync(string id);
+
     }
 }

@@ -199,5 +199,24 @@ namespace TastifyAPI.Controllers
                 return StatusCode(500, $"Failed to delete staff with ID {id}");
             }
         }
+
+        // GET api/StaffController/weekly-working-hours
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpGet("weekly-working-hours")]
+        public async Task<ActionResult<List<StaffReportDto>>> GetWeeklyWorkingHours(DateTime date)
+        {
+            try
+            {
+                var weeklyWorkingHours = await _staffService.GetWeeklyWorkingHoursAsync(date);
+
+                return Ok(weeklyWorkingHours);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get weekly working hours");
+                return StatusCode(500, "Failed to get weekly working hours");
+            }
+        }
+
     }
 }
