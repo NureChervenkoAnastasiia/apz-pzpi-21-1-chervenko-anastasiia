@@ -24,6 +24,7 @@ namespace TastifyAPI.Services
 
             return bookings;
         }
+
         public async Task<Booking?> GetByIdAsync(string id)
         {
             var booking = await _bookingCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
@@ -49,7 +50,6 @@ namespace TastifyAPI.Services
 
             await _bookingCollection.ReplaceOneAsync(x => x.Id == id, updatedBooking);
         }
-
 
         public async Task DeleteAsync(string id) =>
             await _bookingCollection.DeleteOneAsync(x => x.Id == id);
