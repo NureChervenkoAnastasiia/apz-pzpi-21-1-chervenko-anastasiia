@@ -2,16 +2,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
-using TastifyAPI.IServices;
 using TastifyAPI.Services;
 using TastifyAPI.Helpers;
 using TastifyAPI.DTOs.Features_DTOs;
+using TastifyAPI.Services.JwtTokenService;
 
 namespace TastifyAPI.Controllers
 {
@@ -39,10 +35,20 @@ namespace TastifyAPI.Controllers
             _jwtService = new JwtService(config);
         }
 
-        // GET api/StaffController/all-staff
+        /// <summary>
+        /// Get all staff members.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a list of StaffDto.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A list of StaffDto.
+        /// </returns>
         [Authorize(Roles = Roles.Administrator)]
         [HttpGet]
-        public async Task<ActionResult<List<StaffDto>>> Get()
+        public async Task<ActionResult<List<StaffDto>>> GetAllStaff()
         {
             try
             {
@@ -57,14 +63,26 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // GET api/staff-profile/5
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<StaffDto>> GetById(string id)
+        /// <summary>
+        /// Get a staff member by ID.
+        /// </summary>
+        /// <param name="id">The ID of the staff member.</param>
+        /// <remarks>
+        /// This endpoint requires Worker or Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a StaffDto.
+        /// If the staff member is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A StaffDto.
+        /// </returns>
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
+        [HttpGet("{staffId:length(24)}")]
+        public async Task<ActionResult<StaffDto>> GetStaffById(string staffId)
         {
             try
             {
-                var staff = await _staffService.GetByIdAsync(id);
+                var staff = await _staffService.GetByIdAsync(staffId);
                 if (staff == null)
                     return NotFound();
 
@@ -73,43 +91,72 @@ namespace TastifyAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get staff with ID {0}", id);
-                return StatusCode(500, $"Failed to get staff with ID {id}");
+                _logger.LogError(ex, "Failed to get staff with ID {0}", staffId);
+                return StatusCode(500, $"Failed to get staff with ID {staffId}");
             }
         }
 
-        // POST api/StaffController/register
+        /// <summary>
+        /// Get weekly working hours of staff members.
+        /// </summary>
+        /// <param name="date">The date for which to get the weekly working hours.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a list of StaffReportDto.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A list of StaffReportDto.
+        /// </returns>
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpGet("weekly-working-hours")]
+        public async Task<ActionResult<List<StaffReportDto>>> GetWeeklyWorkingHours(DateTime date)
+        {
+            try
+            {
+                var weeklyWorkingHours = await _staffService.GetWeeklyWorkingHoursAsync(date);
+
+                return Ok(weeklyWorkingHours);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get weekly working hours");
+                return StatusCode(500, "Failed to get weekly working hours");
+            }
+        }
+
+        /// <summary>
+        /// Register a new staff member.
+        /// </summary>
+        /// <param name="staffRegistrationDto">The staff registration data.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a JWT token.
+        /// If the ModelState is invalid or staff with the same login already exists, it will return a BadRequest response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A JWT token.
+        /// </returns>
         [Authorize(Roles = Roles.Administrator)]
         [HttpPost("register")]
-        public async Task<ActionResult> Register(StaffRegistrationDto staffRegistrationDto)
+        public async Task<IActionResult> Staff0Register(StaffRegistrationDto staffRegistrationDto)
         {
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
 
                 if (await _staffService.AnyAsync(s => s.Login == staffRegistrationDto.Login))
-                {
                     return BadRequest("Staff with such login already exists");
-                }
 
-                var newStaff = new Staff
-                {
-                    Name = staffRegistrationDto.Name,
-                    Position = staffRegistrationDto.Position,
-                    HourlySalary = staffRegistrationDto.HourlySalary,
-                    Phone = staffRegistrationDto.Phone,
-                    AttendanceCard = 0,
-                    Login = staffRegistrationDto.Login
-                };
-
+                var newStaff = _mapper.Map<Staff>(staffRegistrationDto);
                 newStaff.PasswordHash = _passwordHasher.HashPassword(newStaff, staffRegistrationDto.Password);
 
                 await _staffService.CreateAsync(newStaff);
 
-                return Ok("New staff registration was successful");
+                var token = _jwtService.GenerateStaffToken(newStaff);
+                return Ok(new { Token = token });
             }
             catch (Exception ex)
             {
@@ -118,9 +165,20 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // POST api/StaffController/login
+        /// <summary>
+        /// Log in a staff member.
+        /// </summary>
+        /// <param name="staffLoginDto">The staff login data.</param>
+        /// <remarks>
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a JWT token.
+        /// If the ModelState is invalid, staff does not exist, or the password is incorrect, it will return a BadRequest response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A JWT token.
+        /// </returns>
         [HttpPost("login")]
-        public async Task<IActionResult> Login(StaffLoginDto staffLoginDto)
+        public async Task<IActionResult> StaffLogin(StaffLoginDto staffLoginDto)
         {
             try
             {
@@ -153,70 +211,76 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        // PUT api/StaffController/update-staff-profile/5
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, StaffDto staffDto)
+        /// <summary>
+        /// Update staff member information by ID.
+        /// </summary>
+        /// <param name="id">The ID of the staff member to update.</param>
+        /// <param name="staffDto">The updated staff data.</param>
+        /// <remarks>
+        /// This endpoint requires Worker or Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a success message.
+        /// If the staff member is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A success message.
+        /// </returns>
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
+        [HttpPut("{staffId:length(24)}")]
+        public async Task<IActionResult> UpdateStaff(string staffId, StaffDto staffDto)
         {
             try
             {
-                var existingStaff = await _staffService.GetByIdAsync(id);
+                var existingStaff = await _staffService.GetByIdAsync(staffId);
                 if (existingStaff == null)
                     return NotFound();
 
-                staffDto.Id = id;
+                staffDto.Id = staffId;
                 _mapper.Map(staffDto, existingStaff);
 
-                await _staffService.UpdateAsync(id, existingStaff);
+                await _staffService.UpdateAsync(staffId, existingStaff);
 
-                return NoContent();
+                return Ok("Staff info was updated successfully!");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update staff with ID {0}", id);
-                return StatusCode(500, $"Failed to update staff with ID {id}");
+                _logger.LogError(ex, "Failed to update staff with ID {0}", staffId);
+                return StatusCode(500, $"Failed to update staff with ID {staffId}");
             }
         }
 
-        // DELETE api/StaffController/delete-staff-profile/5
+        /// <summary>
+        /// Delete a staff member by ID.
+        /// </summary>
+        /// <param name="id">The ID of the staff member to delete.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a success message.
+        /// If the staff member is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A success message.
+        /// </returns>
         [Authorize(Roles = Roles.Administrator)]
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpDelete("{staffId:length(24)}")]
+        public async Task<IActionResult> DeleteStaff(string staffId)
         {
             try
             {
-                var staff = await _staffService.GetByIdAsync(id);
+                var staff = await _staffService.GetByIdAsync(staffId);
                 if (staff == null)
                     return NotFound();
 
-                await _staffService.RemoveAsync(id);
+                await _staffService.RemoveAsync(staffId);
 
-                return NoContent();
+                return Ok("Staff was deleted successfully!");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to delete staff with ID {0}", id);
-                return StatusCode(500, $"Failed to delete staff with ID {id}");
+                _logger.LogError(ex, "Failed to delete staff with ID {0}", staffId);
+                return StatusCode(500, $"Failed to delete staff with ID {staffId}");
             }
         }
-
-        // GET api/StaffController/weekly-working-hours
-        [Authorize(Roles = Roles.Administrator)]
-        [HttpGet("weekly-working-hours")]
-        public async Task<ActionResult<List<StaffReportDto>>> GetWeeklyWorkingHours(DateTime date)
-        {
-            try
-            {
-                var weeklyWorkingHours = await _staffService.GetWeeklyWorkingHoursAsync(date);
-
-                return Ok(weeklyWorkingHours);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to get weekly working hours");
-                return StatusCode(500, "Failed to get weekly working hours");
-            }
-        }
-
     }
 }

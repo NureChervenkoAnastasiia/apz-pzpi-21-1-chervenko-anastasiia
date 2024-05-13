@@ -10,6 +10,6 @@ namespace TastifyAPI.IServices
         Task CreateAsync(Guest newGuest);
         Task UpdateAsync(string id, Guest updatedGuest);
         Task RemoveAsync(string id);
-        Task<List<Guest>> GetSortedByNameAndBonusAsync();
+        Task<List<Guest>> GetSortedByBonusAndNameAsync();
     }
 }

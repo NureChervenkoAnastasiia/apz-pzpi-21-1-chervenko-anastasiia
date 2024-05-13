@@ -2,17 +2,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.DTOs.Features_DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Helpers;
-using TastifyAPI.IServices;
 using TastifyAPI.Services;
+using TastifyAPI.Services.JwtTokenService;
 
 namespace TastifyAPI.Controllers
 {
@@ -26,11 +21,12 @@ namespace TastifyAPI.Controllers
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<Guest> _passwordHasher;
 
-        public GuestController(GuestService guestService,
-                               ILogger<GuestController> logger,
-                               IPasswordHasher<Guest> passwordHasher,
-                               IMapper mapper,
-                               IConfiguration config)
+        public GuestController(
+            GuestService guestService,
+            ILogger<GuestController> logger,
+            IPasswordHasher<Guest> passwordHasher,
+            IMapper mapper,
+            IConfiguration config)
         {
             _guestService = guestService;
             _logger = logger;
@@ -39,6 +35,17 @@ namespace TastifyAPI.Controllers
             _jwtService = new JwtService(config);
         }
 
+        /// <summary>
+        /// Get all guests.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a list of GuestDto.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// A list of GuestDto.
+        /// </returns>
         [Authorize(Roles = Roles.Administrator)]
         [HttpGet]
         public async Task<ActionResult<List<GuestDto>>> GetAllGuests()
@@ -56,13 +63,26 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Get guest by ID.
+        /// </summary>
+        /// <param name="guestId">The ID of the guest.</param>
+        /// <remarks>
+        /// This endpoint requires Guest or Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a GuestDto.
+        /// If the guest is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A GuestDto.
+        /// </returns>
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<GuestDto>> GetGuestById(string id)
+        [HttpGet("{guestId:length(24)}")]
+        public async Task<ActionResult<GuestDto>> GetGuestById(string guestId)
         {
             try
             {
-                var Guest = await _guestService.GetByIdAsync(id);
+                var Guest = await _guestService.GetByIdAsync(guestId);
                 if (Guest == null)
                     return NotFound();
 
@@ -71,18 +91,29 @@ namespace TastifyAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get Guest with ID {0}", id);
-                return StatusCode(500, $"Failed to get Guest with ID {id}");
+                _logger.LogError(ex, "Failed to get Guest with ID {0}", guestId);
+                return StatusCode(500, $"Failed to get Guest with ID {guestId}");
             }
         }
 
+        /// <summary>
+        /// Get all guests sorted by bonus and name.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a list of GuestDto.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// A list of GuestDto sorted by name and bonus.
+        /// </returns>
         [Authorize(Roles = Roles.Administrator)]
         [HttpGet("sorted-by-name-and-bonus")]
         public async Task<ActionResult<List<GuestDto>>> GetGuestsSortedByNameAndBonus()
         {
             try
             {
-                var guests = await _guestService.GetSortedByNameAndBonusAsync();
+                var guests = await _guestService.GetSortedByBonusAndNameAsync();
                 var guestDtos = _mapper.Map<List<GuestDto>>(guests);
                 return Ok(guestDtos);
             }
@@ -93,6 +124,18 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Make a coupon for a guest based on bonus points.
+        /// </summary>
+        /// <param name="bonus">The bonus points.</param>
+        /// <remarks>
+        /// This endpoint requires Guest role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a CouponDto.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// A CouponDto whith sale and bonuses remaining.
+        /// </returns>
         [Authorize(Roles = Roles.Guest)]
         [HttpPost("make-coupon")]
         public async Task<ActionResult<CouponDto>> MakeCoupon(int bonus)
@@ -110,6 +153,18 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Register a new guest.
+        /// </summary>
+        /// <param name="guestRegistrationDto">The guest registration data.</param>
+        /// <remarks>
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a JWT token.
+        /// If the guest already exists, it will return a BadRequest response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// A JWT token.
+        /// </returns>
         [HttpPost("register")]
         public async Task<ActionResult> Register(GuestRegistrationDto guestRegistrationDto)
         {
@@ -138,6 +193,18 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Login as a guest.
+        /// </summary>
+        /// <param name="guestLoginDto">The guest login data.</param>
+        /// <remarks>
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a JWT token.
+        /// If the login is invalid, it will return a BadRequest response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// A JWT token.
+        /// </returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login(GuestLoginDto guestLoginDto)
         {
@@ -152,7 +219,8 @@ namespace TastifyAPI.Controllers
                     return BadRequest("Guest with such login does not exists");
 
 
-                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, guest.PasswordHash, guestLoginDto.Password);
+                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, 
+                    guest.PasswordHash, guestLoginDto.Password);
 
                 if (passwordVerificationResult != PasswordVerificationResult.Success)
                 {
@@ -169,48 +237,75 @@ namespace TastifyAPI.Controllers
             }
         }
 
+        /// <summary>
+        /// Update a guest's information.
+        /// </summary>
+        /// <param name="id">The ID of the guest.</param>
+        /// <param name="guestDto">The updated guest data.</param>
+        /// <remarks>
+        /// This endpoint requires Guest or Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a success message.
+        /// If the guest is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// HTTP 200 OK with success message.
+        /// </returns>
         [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> UpdateGuest(string id, GuestDto guestDto)
+        [HttpPut("{guestId:length(24)}")]
+        public async Task<IActionResult> UpdateGuest(string guestId, GuestDto guestDto)
         {
             try
             {
-                var existingGuest = await _guestService.GetByIdAsync(id);
+                var existingGuest = await _guestService.GetByIdAsync(guestId);
                 if (existingGuest == null)
                     return NotFound();
 
-                guestDto.Id = id;
+                guestDto.Id = guestId;
                 _mapper.Map(guestDto, existingGuest);
+                guestDto.PasswordHash = _passwordHasher.HashPassword(existingGuest, guestDto.PasswordHash);
 
-                await _guestService.UpdateAsync(id, existingGuest);
+                await _guestService.UpdateAsync(guestId, existingGuest);
 
                 return Ok("Guest updated successfully!");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update Guest with ID {0}", id);
-                return StatusCode(500, $"Failed to update Guest with ID {id}");
+                _logger.LogError(ex, "Failed to update Guest with ID {0}", guestId);
+                return StatusCode(500, $"Failed to update Guest with ID {guestId}");
             }
         }
-
-        [Authorize(Roles = Roles.Guest + "," + Roles.Administrator)]
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> DeleteGuest(string id)
+        /// <summary>
+        /// Delete a guest.
+        /// </summary>
+        /// <param name="id">The ID of the guest.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK with a success message.
+        /// If the guest is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with error message.
+        /// </remarks>
+        /// <returns>
+        /// HTTP 200 OK with a success message.
+        /// </returns>
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpDelete("{guestId:length(24)}")]
+        public async Task<IActionResult> DeleteGuest(string guestId)
         {
             try
             {
-                var Guest = await _guestService.GetByIdAsync(id);
+                var Guest = await _guestService.GetByIdAsync(guestId);
                 if (Guest == null)
                     return NotFound();
 
-                await _guestService.RemoveAsync(id);
+                await _guestService.RemoveAsync(guestId);
 
                 return Ok("Guest deleted successfully!");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to delete Guest with ID {0}", id);
-                return StatusCode(500, $"Failed to delete Guest with ID {id}");
+                _logger.LogError(ex, "Failed to delete Guest with ID {0}", guestId);
+                return StatusCode(500, $"Failed to delete Guest with ID {guestId}");
             }
         }
     }

@@ -1,15 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
+using TastifyAPI.Helpers;
 using TastifyAPI.Services;
-
-//TODO: /get-sorted-products-by-amount
-//TODO: /get-sorted-products-by-name
 
 namespace TastifyAPI.Controllers
 {
@@ -21,15 +16,30 @@ namespace TastifyAPI.Controllers
         private readonly ILogger<ProductController> _logger;
         private readonly IMapper _mapper;
 
-        public ProductController(ProductService productsService, ILogger<ProductController> logger, IMapper mapper)
+        public ProductController(
+            ProductService productsService, 
+            ILogger<ProductController> logger, 
+            IMapper mapper)
         {
             _productService = productsService;
             _logger = logger;
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get all products.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint requires Worker or Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a list of ProductDto.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A list of ProductDto.
+        /// </returns>
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
         [HttpGet]
-        public async Task<ActionResult<List<ProductDto>>> Get()
+        public async Task<ActionResult<List<ProductDto>>> GetAllProducts()
         {
             try
             {
@@ -44,12 +54,26 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<ProductDto>> GetById(string id)
+        /// <summary>
+        /// Get a product by ID.
+        /// </summary>
+        /// <param name="productId">The ID of the product.</param>
+        /// <remarks>
+        /// This endpoint requires Worker or Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a ProductDto.
+        /// If the product is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// A ProductDto.
+        /// </returns>
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
+        [HttpGet("{productId:length(24)}")]
+        public async Task<ActionResult<ProductDto>> GetProductById(string productId)
         {
             try
             {
-                var product = await _productService.GetByIdAsync(id);
+                var product = await _productService.GetByIdAsync(productId);
                 if (product == null)
                     return NotFound();
 
@@ -58,18 +82,30 @@ namespace TastifyAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get product with ID {0}", id);
-                return StatusCode(500, $"Failed to get product with ID {id}");
+                _logger.LogError(ex, "Failed to get product with ID {0}", productId);
+                return StatusCode(500, $"Failed to get product with ID {productId}");
             }
         }
 
+        /// <summary>
+        /// Create a new product.
+        /// </summary>
+        /// <param name="productDto">The product data.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 201 Created containing the created ProductDto.
+        /// If the ModelState is invalid, it will return a BadRequest response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// The created ProductDto.
+        /// </returns>
+        [Authorize(Roles = Roles.Administrator)]
         [HttpPost]
-        public async Task<ActionResult<ProductDto>> Create(ProductDto productDto)
+        public async Task<ActionResult<ProductDto>> CreateProduct(ProductDto productDto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             try
             {
@@ -77,7 +113,8 @@ namespace TastifyAPI.Controllers
                 await _productService.CreateAsync(product);
 
                 var createdProductDto = _mapper.Map<ProductDto>(product);
-                return CreatedAtAction(nameof(GetById), new { id = createdProductDto.Id }, createdProductDto);
+                return CreatedAtAction(nameof(GetProductById), 
+                    new { id = createdProductDto.Id }, createdProductDto);
             }
             catch (Exception ex)
             {
@@ -86,47 +123,75 @@ namespace TastifyAPI.Controllers
             }
         }
 
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        /// <summary>
+        /// Update an existing product.
+        /// </summary>
+        /// <param name="productId">The ID of the product to update.</param>
+        /// <param name="productDto">The updated product data.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a success message.
+        /// If the product is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// HTTP 200 OK with success message.
+        /// </returns>
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpPut("{productId:length(24)}")]
+        public async Task<IActionResult> UpdateProduct(string productId, ProductDto productDto)
         {
             try
             {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                    return NotFound($"Product with ID {id} not found");
-
-                await _productService.RemoveAsync(id);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to delete product with ID {0}", id);
-                return StatusCode(500, "Failed to delete product");
-            }
-        }
-
-
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, ProductDto productDto)
-        {
-            try
-            {
-                var existingProduct = await _productService.GetByIdAsync(id);
+                var existingProduct = await _productService.GetByIdAsync(productId);
                 if (existingProduct == null)
                     return NotFound();
 
-                productDto.Id = id;
+                productDto.Id = productId;
                 _mapper.Map(productDto, existingProduct);
 
-                await _productService.UpdateAsync(id, existingProduct);
+                await _productService.UpdateAsync(productId, existingProduct);
 
-                return NoContent();
+                return Ok("Product was updated successfully!");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update product with ID {0}", id);
-                return StatusCode(500, $"Failed to update product with ID {id}");
+                _logger.LogError(ex, "Failed to update product with ID {0}", productId);
+                return StatusCode(500, $"Failed to update product with ID {productId}");
+            }
+        }
+
+        /// <summary>
+        /// Delete a product.
+        /// </summary>
+        /// <param name="productId">The ID of the product to delete.</param>
+        /// <remarks>
+        /// This endpoint requires Administrator role.
+        /// If the operation is successful, it will return an ActionResult with HTTP 200 OK with a success message.
+        /// If the product is not found, it will return a NotFound response.
+        /// If an error occurs during the operation, it will return a 500 Internal Server Error response with an error message.
+        /// </remarks>
+        /// <returns>
+        /// HTTP 200 OK with a success message.
+        /// </returns>
+        [Authorize(Roles = Roles.Administrator)]
+        [HttpDelete("{productId:length(24)}")]
+        public async Task<IActionResult> DeleteProduct(string productId)
+        {
+            try
+            {
+                var product = await _productService.GetByIdAsync(productId);
+                if (product == null)
+                    return NotFound($"Product with ID {productId} not found");
+
+                await _productService.RemoveAsync(productId);
+
+                return Ok("Product was updated successfully!");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete product with ID {0}", productId);
+                return StatusCode(500, "Failed to delete product");
             }
         }
     }

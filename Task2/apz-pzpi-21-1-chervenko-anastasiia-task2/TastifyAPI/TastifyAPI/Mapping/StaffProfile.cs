@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using TastifyAPI.DTOs;
+using TastifyAPI.DTOs.Features_DTOs;
 using TastifyAPI.Entities;
 
 namespace TastifyAPI.Mapping
@@ -10,6 +11,9 @@ namespace TastifyAPI.Mapping
         {
             CreateMap<Staff, StaffDto>();
             CreateMap<StaffDto, Staff>();
+            CreateMap<StaffRegistrationDto, Staff>();
+            CreateMap<Staff, StaffRegistrationDto>();
+            
         }
     }
 }

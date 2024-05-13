@@ -59,13 +59,25 @@ namespace TastifyAPI.Services
 
         public async Task<List<Booking>> GetSortedByDateAsync(DateTime date)
         {
-            var sortDefinition = Builders<Booking>.Sort.Ascending(x => x.BookingDateTime);
-            return await _bookingCollection.Find(_ => true)
+            var startOfDay = date.Date;
+            var endOfDay = date.Date.AddDays(1).AddTicks(-1);
+
+            var sortDefinition = Builders<Booking>.Sort.Descending(x => x.BookingDateTime);
+
+            return await _bookingCollection.Find(x => x.BookingDateTime >= startOfDay && x.BookingDateTime <= endOfDay)
                 .Sort(sortDefinition)
                 .ToListAsync();
         }
-        public async Task<List<Booking>> GetAllBookingsAsync(string guestId) =>
-            await _bookingCollection.Find(x => x.GuestId == guestId).ToListAsync();
+
+        public async Task<List<Booking>> GetAllBookingsAsync(string guestId)
+        {
+            var bookings = await _bookingCollection.Find(x => x.GuestId == guestId).ToListAsync();
+            foreach (var booking in bookings)
+            {
+                booking.BookingDateTime = booking.BookingDateTime.ToLocalTime();
+            }
+            return bookings;
+        }
         public async Task DeleteAsync(string id) =>
             await _bookingCollection.DeleteOneAsync(x => x.Id == id);        
     }

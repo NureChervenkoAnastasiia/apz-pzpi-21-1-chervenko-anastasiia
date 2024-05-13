@@ -13,7 +13,6 @@ using TastifyAPI.BuildInjections;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.Configure<TastifyDbSettings>(
     builder.Configuration.GetSection("ConnectionStrings"));
 
@@ -44,7 +43,6 @@ builder.Services.AddSetSecurity(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

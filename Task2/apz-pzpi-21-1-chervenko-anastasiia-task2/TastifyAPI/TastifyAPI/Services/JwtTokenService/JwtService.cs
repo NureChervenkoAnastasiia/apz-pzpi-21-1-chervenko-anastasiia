@@ -3,11 +3,10 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using TastifyAPI.DTOs;
-
 using TastifyAPI.Entities;
 using TastifyAPI.Helpers;
 
-namespace TastifyAPI.Services
+namespace TastifyAPI.Services.JwtTokenService
 {
     public class JwtService
     {

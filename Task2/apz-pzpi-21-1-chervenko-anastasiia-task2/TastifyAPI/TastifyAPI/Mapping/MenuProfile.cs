@@ -10,6 +10,5 @@ namespace TastifyAPI.Mapping
             CreateMap<Menu, MenuDto>();
             CreateMap<MenuDto, Menu>();
         }
-        
     }
 }

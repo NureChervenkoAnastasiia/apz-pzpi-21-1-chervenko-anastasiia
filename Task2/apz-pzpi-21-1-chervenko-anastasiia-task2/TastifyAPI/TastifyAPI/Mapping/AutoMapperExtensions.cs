@@ -15,6 +15,7 @@ namespace TastifyAPI.Extensions
                 Assembly.GetAssembly(typeof(MenuProfile)), 
                 Assembly.GetAssembly(typeof(BookingProfile)),
                 Assembly.GetAssembly(typeof(ProductProfile)));
+
             return services;
         }
     }
