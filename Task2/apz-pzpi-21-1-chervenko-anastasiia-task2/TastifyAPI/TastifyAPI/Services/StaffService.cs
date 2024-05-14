@@ -55,11 +55,13 @@ namespace TastifyAPI.Services
 
             foreach (var staff in staffList)
             {
+#pragma warning disable CS8601 // Possible null reference assignment.
                 var staffReport = new StaffReportDto
                 {
                     Name = staff.Name,
                     TotalWorkingHours = 0
                 };
+#pragma warning restore CS8601 // Possible null reference assignment.
 
                 var scheduleList = await _scheduleCollection.Find(x => x.StaffId == staff.Id && x.StartDateTime >= startDate && x.FinishDateTime <= endDate).ToListAsync();
 

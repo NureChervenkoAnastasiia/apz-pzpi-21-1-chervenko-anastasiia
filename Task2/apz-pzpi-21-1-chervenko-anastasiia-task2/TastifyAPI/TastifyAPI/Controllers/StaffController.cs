@@ -66,7 +66,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Get a staff member by ID.
         /// </summary>
-        /// <param name="id">The ID of the staff member.</param>
+        /// <param name="staffId">The ID of the staff member.</param>
         /// <remarks>
         /// This endpoint requires Worker or Administrator role.
         /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a StaffDto.
@@ -187,14 +187,20 @@ namespace TastifyAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
+#pragma warning disable CS8604 // Possible null reference argument.
                 var staff = await _staffService.GetByLoginAsync(staffLoginDto.Login);
+#pragma warning restore CS8604 // Possible null reference argument.
 
                 if (staff == null)
                 {
                     return BadRequest("Staff with such login does not exist");
                 }
 
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8604 // Possible null reference argument.
                 var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(staff, staff.PasswordHash, staffLoginDto.Password);
+#pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8604 // Possible null reference argument.
 
                 if (passwordVerificationResult != PasswordVerificationResult.Success)
                 {
@@ -214,7 +220,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Update staff member information by ID.
         /// </summary>
-        /// <param name="id">The ID of the staff member to update.</param>
+        /// <param name="staffId">The ID of the staff member to update.</param>
         /// <param name="staffDto">The updated staff data.</param>
         /// <remarks>
         /// This endpoint requires Worker or Administrator role.
@@ -252,7 +258,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Delete a staff member by ID.
         /// </summary>
-        /// <param name="id">The ID of the staff member to delete.</param>
+        /// <param name="staffId">The ID of the staff member to delete.</param>
         /// <remarks>
         /// This endpoint requires Administrator role.
         /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a success message.

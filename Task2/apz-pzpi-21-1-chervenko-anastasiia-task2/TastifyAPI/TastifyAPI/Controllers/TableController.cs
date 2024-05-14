@@ -57,7 +57,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Get a table by ID.
         /// </summary>
-        /// <param name="id">The ID of the table.</param>
+        /// <param name="tableId">The ID of the table.</param>
         /// <remarks>
         /// This endpoint requires Worker or Administrator role.
         /// If the operation is successful, it will return an ActionResult with HTTP 200 OK containing a TableDto.
@@ -125,7 +125,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Update a table by ID.
         /// </summary>
-        /// <param name="id">The ID of the table to update.</param>
+        /// <param name="tableId">The ID of the table to update.</param>
         /// <param name="tableDto">The updated table data.</param>
         /// <remarks>
         /// This endpoint requires Worker or Administrator role.
@@ -163,7 +163,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Delete a table by ID.
         /// </summary>
-        /// <param name="id">The ID of the table to delete.</param>
+        /// <param name="tableId">The ID of the table to delete.</param>
         /// <remarks>
         /// This endpoint requires Administrator role.
         /// If the operation is successful, it will return an ActionResult with HTTP 200 OK with ssuccess message.

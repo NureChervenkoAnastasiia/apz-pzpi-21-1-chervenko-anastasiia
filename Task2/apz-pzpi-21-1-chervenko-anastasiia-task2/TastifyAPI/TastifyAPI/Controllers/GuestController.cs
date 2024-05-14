@@ -218,7 +218,6 @@ namespace TastifyAPI.Controllers
                 if (guest == null)
                     return BadRequest("Guest with such login does not exists");
 
-
                 var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, 
                     guest.PasswordHash, guestLoginDto.Password);
 
@@ -240,7 +239,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Update a guest's information.
         /// </summary>
-        /// <param name="id">The ID of the guest.</param>
+        /// <param name="guestId">The ID of the guest.</param>
         /// <param name="guestDto">The updated guest data.</param>
         /// <remarks>
         /// This endpoint requires Guest or Administrator role.
@@ -263,6 +262,7 @@ namespace TastifyAPI.Controllers
 
                 guestDto.Id = guestId;
                 _mapper.Map(guestDto, existingGuest);
+
                 guestDto.PasswordHash = _passwordHasher.HashPassword(existingGuest, guestDto.PasswordHash);
 
                 await _guestService.UpdateAsync(guestId, existingGuest);
@@ -278,7 +278,7 @@ namespace TastifyAPI.Controllers
         /// <summary>
         /// Delete a guest.
         /// </summary>
-        /// <param name="id">The ID of the guest.</param>
+        /// <param name="guestId">The ID of the guest.</param>
         /// <remarks>
         /// This endpoint requires Administrator role.
         /// If the operation is successful, it will return an ActionResult with HTTP 200 OK with a success message.
