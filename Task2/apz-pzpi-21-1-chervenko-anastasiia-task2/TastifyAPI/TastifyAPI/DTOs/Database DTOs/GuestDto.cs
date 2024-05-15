@@ -20,7 +20,7 @@ namespace TastifyAPI.DTOs
         [EmailAddress(ErrorMessage = "Invalid Email Address")]
         public string? Email { get; set; }
 
-        public string? PasswordHash { get; set; }
+        public string? Password { get; set; }
 
         [RegularExpression(@"^[a-zA-Z0-9]{5,20}$", ErrorMessage = "Login must be between 5 and 20 characters long, containing only letters and numbers.")]
         public string? Login { get; set; }

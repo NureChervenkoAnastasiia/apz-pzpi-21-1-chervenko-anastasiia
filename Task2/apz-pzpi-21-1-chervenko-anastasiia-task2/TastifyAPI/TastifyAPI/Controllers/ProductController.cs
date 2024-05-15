@@ -114,7 +114,7 @@ namespace TastifyAPI.Controllers
 
                 var createdProductDto = _mapper.Map<ProductDto>(product);
                 return CreatedAtAction(nameof(GetProductById), 
-                    new { id = createdProductDto.Id }, createdProductDto);
+                    new { productId = createdProductDto.Id }, createdProductDto);
             }
             catch (Exception ex)
             {

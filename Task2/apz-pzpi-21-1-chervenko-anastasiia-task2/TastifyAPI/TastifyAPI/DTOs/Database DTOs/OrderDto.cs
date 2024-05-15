@@ -12,8 +12,8 @@ namespace TastifyAPI.DTOs
         [Required(ErrorMessage = "TableId is required")]
         public string? TableId { get; set; }
 
-        [Required(ErrorMessage = "DateTime is required")]
-        public DateTime? DateTime { get; set; }
+        [Required(ErrorMessage = "OrderDateTime is required")]
+        public DateTime OrderDateTime { get; set; }
 
         [StringLength(500, ErrorMessage = "Comment must be at most 500 characters")]
         public string? Comment { get; set; }

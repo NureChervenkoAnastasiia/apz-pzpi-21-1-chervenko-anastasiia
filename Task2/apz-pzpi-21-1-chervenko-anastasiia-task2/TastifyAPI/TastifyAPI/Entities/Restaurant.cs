@@ -16,7 +16,7 @@ namespace TastifyAPI.Entities
         public string? Address { get; set; }
 
         [BsonElement("telephone"), BsonRepresentation(BsonType.String)]
-        public string? Telephone { get; set; }
+        public string? Phone { get; set; }
 
         [BsonElement("email"), BsonRepresentation(BsonType.String)]
         public string? Email { get; set; }

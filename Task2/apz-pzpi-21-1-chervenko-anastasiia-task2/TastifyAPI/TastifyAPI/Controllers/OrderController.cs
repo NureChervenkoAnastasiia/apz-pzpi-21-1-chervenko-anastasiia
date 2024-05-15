@@ -114,7 +114,7 @@ namespace TastifyAPI.Controllers
 
                 var createdOrderDto = _mapper.Map<OrderDto>(order);
                 return CreatedAtAction(nameof(GetOrderById), 
-                    new { id = createdOrderDto.Id }, createdOrderDto);
+                    new { orderId = createdOrderDto.Id }, createdOrderDto);
             }
             catch (Exception ex)
             {

@@ -19,7 +19,7 @@ namespace TastifyAPI.DTOs
         public double? HourlySalary { get; set; }
 
         [Required(ErrorMessage = "Phone is required")]
-        [Phone(ErrorMessage = "Invalid phone number format")]
+        [RegularExpression(@"^[0-9]{12}$", ErrorMessage = "Mobile number must contain exactly 12 digits")]
         public long? Phone { get; set; }
 
         [Required(ErrorMessage = "AttendanceCard is required")]
@@ -30,9 +30,9 @@ namespace TastifyAPI.DTOs
         [StringLength(50, MinimumLength = 5, ErrorMessage = "Login must be between 5 and 50 characters")]
         public string? Login { get; set; }
 
-        [Required(ErrorMessage = "PasswordHash is required")]
+        [Required(ErrorMessage = "Password is required")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "PasswordHash must be between 6 and 20 characters")]
-        public string? PasswordHash { get; set; }
+        public string? Password { get; set; }
 
         [Required(ErrorMessage = "RestaurantId is required")]
         public string? RestaurantId { get; set; }

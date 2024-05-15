@@ -113,7 +113,7 @@ namespace TastifyAPI.Controllers
                 await _scheduleService.CreateAsync(schedule);
 
                 var createdScheduleDto = _mapper.Map<ScheduleDto>(schedule);
-                return CreatedAtAction(nameof(GetScheduleById), new { id = createdScheduleDto.Id }, createdScheduleDto);
+                return CreatedAtAction(nameof(GetScheduleById), new { scheduleId = createdScheduleDto.Id }, createdScheduleDto);
             }
             catch (Exception ex)
             {

@@ -71,7 +71,7 @@ namespace TastifyAPI.Controllers
         /// A MenuDto.
         /// </returns>
         [Authorize(Roles = Roles.Worker + "," + Roles.Administrator + "," + Roles.Guest)]
-        [HttpGet("/{menuId:length(24)}")]
+        [HttpGet("{menuId:length(24)}")]
         public async Task<ActionResult<MenuDto>> GetDishById(string menuId)
         {
             try
@@ -243,7 +243,7 @@ namespace TastifyAPI.Controllers
         /// <returns>
         /// The created dish's MenuDto.
         /// </returns>
-        [Authorize(Roles = Roles.Administrator)]
+        //[Authorize(Roles = Roles.Administrator)]
         [HttpPost]
         public async Task<ActionResult<MenuDto>> CreateDish(MenuDto menuDto)
         {
@@ -256,7 +256,7 @@ namespace TastifyAPI.Controllers
                 await _menuService.CreateAsync(menu);
 
                 var createdMenuDto = _mapper.Map<MenuDto>(menu);
-                return CreatedAtAction(nameof(GetDishById), new { id = createdMenuDto.Id }, createdMenuDto);
+                return CreatedAtAction(nameof(GetDishById), new { menuId = createdMenuDto.Id }, createdMenuDto);
             }
             catch (Exception ex)
             {

@@ -113,7 +113,7 @@ namespace TastifyAPI.Controllers
                 await _tableService.CreateAsync(table);
 
                 var createdTableDto = _mapper.Map<TableDto>(table);
-                return CreatedAtAction(nameof(GetTableById), new { id = createdTableDto.Id }, createdTableDto);
+                return CreatedAtAction(nameof(GetTableById), new { tableId = createdTableDto.Id }, createdTableDto);
             }
             catch (Exception ex)
             {

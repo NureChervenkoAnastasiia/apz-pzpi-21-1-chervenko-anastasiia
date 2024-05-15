@@ -10,7 +10,7 @@ namespace TastifyAPI.DTOs
         public string? Name { get; set; }
 
         [Required(ErrorMessage = "Address is required")]
-        [RegularExpression(@"^[a-zA-Z0-9\s,.'-]+$", ErrorMessage = "Invalid address format")]
+        [RegularExpression(@"^[a-zA-Zа-яА-ЯёЁ0-9\s,.'-]+$", ErrorMessage = "Invalid address format")]
         public string? Address { get; set; }
 
         [Phone(ErrorMessage = "Invalid phone number format")]

@@ -219,7 +219,7 @@ namespace TastifyAPI.Controllers
         }
 
         /// <summary>
-        /// Create new booking.
+        /// Update info about exiting booking.
         /// </summary>
         /// <param name="bookingDto">The DTO of bookings.</param>
         /// <remarks>

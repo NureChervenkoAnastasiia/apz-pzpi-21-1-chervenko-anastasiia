@@ -179,7 +179,7 @@ namespace TastifyAPI.Controllers
                 var newGuest = _mapper.Map<Guest>(guestRegistrationDto);
 
                 newGuest.Bonus = 0;
-                newGuest.PasswordHash = _passwordHasher.HashPassword(newGuest, guestRegistrationDto.Password);
+                newGuest.Password = _passwordHasher.HashPassword(newGuest, guestRegistrationDto.Password);
 
                 await _guestService.CreateAsync(newGuest);
 
@@ -219,7 +219,7 @@ namespace TastifyAPI.Controllers
                     return BadRequest("Guest with such login does not exists");
 
                 var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(guest, 
-                    guest.PasswordHash, guestLoginDto.Password);
+                    guest.Password, guestLoginDto.Password);
 
                 if (passwordVerificationResult != PasswordVerificationResult.Success)
                 {
@@ -263,7 +263,7 @@ namespace TastifyAPI.Controllers
                 guestDto.Id = guestId;
                 _mapper.Map(guestDto, existingGuest);
 
-                guestDto.PasswordHash = _passwordHasher.HashPassword(existingGuest, guestDto.PasswordHash);
+                guestDto.Password = _passwordHasher.HashPassword(existingGuest, guestDto.Password);
 
                 await _guestService.UpdateAsync(guestId, existingGuest);
 

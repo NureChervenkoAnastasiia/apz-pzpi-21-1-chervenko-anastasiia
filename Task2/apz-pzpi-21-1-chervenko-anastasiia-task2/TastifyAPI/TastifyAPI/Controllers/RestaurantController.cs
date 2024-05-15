@@ -112,7 +112,7 @@ namespace TastifyAPI.Controllers
 
                 var createdRestaurantDto = _mapper.Map<RestaurantDto>(restaurant);
                 return CreatedAtAction(nameof(GetRestaurantById), 
-                    new { id = createdRestaurantDto.Id }, createdRestaurantDto);
+                    new { restaurantId = createdRestaurantDto.Id }, createdRestaurantDto);
             }
             catch (Exception ex)
             {

@@ -151,7 +151,7 @@ namespace TastifyAPI.Controllers
                     return BadRequest("Staff with such login already exists");
 
                 var newStaff = _mapper.Map<Staff>(staffRegistrationDto);
-                newStaff.PasswordHash = _passwordHasher.HashPassword(newStaff, staffRegistrationDto.Password);
+                newStaff.Password = _passwordHasher.HashPassword(newStaff, staffRegistrationDto.Password);
 
                 await _staffService.CreateAsync(newStaff);
 
@@ -187,20 +187,14 @@ namespace TastifyAPI.Controllers
                     return BadRequest(ModelState);
                 }
 
-#pragma warning disable CS8604 // Possible null reference argument.
                 var staff = await _staffService.GetByLoginAsync(staffLoginDto.Login);
-#pragma warning restore CS8604 // Possible null reference argument.
 
                 if (staff == null)
                 {
                     return BadRequest("Staff with such login does not exist");
                 }
 
-#pragma warning disable CS8604 // Possible null reference argument.
-#pragma warning disable CS8604 // Possible null reference argument.
-                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(staff, staff.PasswordHash, staffLoginDto.Password);
-#pragma warning restore CS8604 // Possible null reference argument.
-#pragma warning restore CS8604 // Possible null reference argument.
+                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(staff, staff.Password, staffLoginDto.Password);
 
                 if (passwordVerificationResult != PasswordVerificationResult.Success)
                 {

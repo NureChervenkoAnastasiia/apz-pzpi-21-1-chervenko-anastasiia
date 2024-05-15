@@ -22,7 +22,7 @@ namespace TastifyAPI.Entities
         public string? Email { get; set; }
 
         [BsonElement("password_hash"), BsonRepresentation(BsonType.String)]
-        public string? PasswordHash { get; set; }
+        public string? Password { get; set; }
 
         [BsonElement("login"), BsonRepresentation(BsonType.String)]
         public string? Login {  get; set; } 

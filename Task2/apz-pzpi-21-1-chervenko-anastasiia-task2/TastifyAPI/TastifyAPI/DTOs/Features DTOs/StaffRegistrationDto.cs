@@ -26,5 +26,8 @@ namespace TastifyAPI.DTOs.Features_DTOs
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
         [RegularExpression(@"^(?=.*\d).*$", ErrorMessage = "Password must contain at least one numeric digit")]
         public string? Password { get; set; }
+
+        [Required(ErrorMessage = "RestaurantId is required")]
+        public string? RestaurantId {  get; set; }
     }
 }
