@@ -140,7 +140,7 @@ namespace TastifyAPI.Controllers
         /// </returns>
         [Authorize(Roles = Roles.Administrator)]
         [HttpPost("register")]
-        public async Task<IActionResult> Staff0Register(StaffRegistrationDto staffRegistrationDto)
+        public async Task<IActionResult> StaffRegister(StaffRegistrationDto staffRegistrationDto)
         {
             try
             {
