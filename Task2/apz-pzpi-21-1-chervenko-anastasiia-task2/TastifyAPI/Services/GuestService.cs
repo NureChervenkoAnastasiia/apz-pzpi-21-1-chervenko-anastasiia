@@ -51,9 +51,7 @@ namespace TastifyAPI.Services
             await _guestCollection.ReplaceOneAsync(x => x.Id == id, guest);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<(int discount, int remainingBonus)> CalculateCouponAsync(int bonus)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             decimal bonusCoefficient = 0.7m;
             int discount = 0;
