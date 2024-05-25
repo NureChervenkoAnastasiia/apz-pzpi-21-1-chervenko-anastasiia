@@ -22,7 +22,9 @@ namespace TastifyAPI.Services
                 s.FinishDateTime = s.FinishDateTime?.ToLocalTime();
             }
 
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             return schedules;
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         public async Task<Schedule?> GetByIdAsync(string id)

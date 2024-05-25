@@ -43,6 +43,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+
 builder.Services.AddServices();
 builder.Services.AddAutoMapperProfiles();
 builder.Services.AddMongoCollections();
@@ -77,6 +78,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+
 
 app.UseAuthorization();
 

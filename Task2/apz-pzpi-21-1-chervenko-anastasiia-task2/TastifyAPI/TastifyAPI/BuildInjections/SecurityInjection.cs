@@ -9,7 +9,9 @@ namespace TastifyAPI.BuildInjections
         internal static void AddSetSecurity(this IServiceCollection services, IConfiguration config)
         {
             var securityKey = config["Jwt:Key"];
+#pragma warning disable CS8604 // Possible null reference argument.
             var key = Encoding.ASCII.GetBytes(securityKey);
+#pragma warning restore CS8604 // Possible null reference argument.
 
             services.AddAuthentication(options =>
             {
