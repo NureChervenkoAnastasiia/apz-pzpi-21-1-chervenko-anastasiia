@@ -114,92 +114,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    async function fetchMenuItem(menuId) {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiUrl}${menuId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (response.ok) {
-            return await response.json();
-        } else {
-            console.error('Error fetching menu item:', await response.text());
-            return null;
-        }
-    }
-
-    function enableEditing(menuItem) {
-        const menuId = menuItem.id;
-
-        const nameCell = document.getElementById(`name-${menuId}`);
-        const sizeCell = document.getElementById(`size-${menuId}`);
-        const priceCell = document.getElementById(`price-${menuId}`);
-        const infoCell = document.getElementById(`info-${menuId}`);
-        const typeCell = document.getElementById(`type-${menuId}`);
-
-        nameCell.innerHTML = `<input type="text" id="edit-name-${menuId}" value="${menuItem.name}">`;
-        sizeCell.innerHTML = `<input type="text" id="edit-size-${menuId}" value="${menuItem.size}">`;
-        priceCell.innerHTML = `<input type="text" id="edit-price-${menuId}" value="${menuItem.price}">`;
-        infoCell.innerHTML = `<input type="text" id="edit-info-${menuId}" value="${menuItem.info}">`;
-        typeCell.innerHTML = `
-            <select id="edit-type-${menuId}">
-                <option value="Перші страви" ${menuItem.type === 'Перші страви' ? 'selected' : ''}>Перші страви</option>
-                <option value="Другі страви" ${menuItem.type === 'Другі страви' ? 'selected' : ''}>Другі страви</option>
-                <option value="Напої" ${menuItem.type === 'Напої' ? 'selected' : ''}>Напої</option>
-            </select>
-        `;
-
-        const editButton = document.querySelector(`button.btn-edit[data-menuid="${menuId}"]`);
-        editButton.textContent = 'Save';
-        editButton.onclick = () => handleSave(menuId);
-    }
-
-    async function handleEdit(menuId) {
-        const menuItem = await fetchMenuItem(menuId);
-        if (menuItem) {
-            enableEditing(menuItem);
-        }
-    }
-
-    async function handleSave(menuId) {
-        const token = localStorage.getItem('token');
-        const name = document.getElementById(`edit-name-${menuId}`).value;
-        const size = document.getElementById(`edit-size-${menuId}`).value;
-        const price = document.getElementById(`edit-price-${menuId}`).value;
-        const info = document.getElementById(`edit-info-${menuId}`).value;
-        const type = document.getElementById(`edit-type-${menuId}`).value;
-
-        if (!name || !size || !price || !info || !type) {
-            alert('Please fill in all fields');
-            return;
-        }
-
-        const response = await fetch(`${apiUrl}/${menuId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: name,
-                size: size,
-                price: price,
-                info: info,
-                type: type
-            })
-        });
-
-        if (response.ok) {
-            alert('Dish or drink was updated successfully!');
-            location.reload();
-        } else {
-            const error = await response.text();
-            console.error('Error:', error);
-        }
-    }
-
     async function handleDelete(menuId) {
         if (!menuId) {
             console.error('Error: Menu ID is undefined');
@@ -227,6 +141,137 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    function handleEdit(menuId) {
+        if (!menuId) {
+            console.error('Error: Menu ID is undefined');
+            return;
+        }
+
+        const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
+
+        const nameCell = row.cells[0];
+        const sizeCell = row.cells[1];
+        const priceCell = row.cells[2];
+        const infoCell = row.cells[3];
+        const typeCell = row.cells[4];
+        const editButtonCell = row.cells[5];
+        const deleteButtonCell = row.cells[6];
+
+        const name = nameCell.textContent;
+        const size = sizeCell.textContent;
+        const price = priceCell.textContent;
+        const info = infoCell.textContent;
+        const type = typeCell.textContent;
+
+        nameCell.innerHTML = `<input type="text" value="${name}">`;
+        sizeCell.innerHTML = `<input type="text" value="${size}">`;
+        priceCell.innerHTML = `<input type="text" value="${price}">`;
+        infoCell.innerHTML = `<input type="text" value="${info}">`;
+        typeCell.innerHTML = `
+            <select>
+                <option value="Перші страви" ${type === 'Перші страви' ? 'selected' : ''}>Перші страви</option>
+                <option value="Другі страви" ${type === 'Другі страви' ? 'selected' : ''}>Другі страви</option>
+                <option value="Напої" ${type === 'Напої' ? 'selected' : ''}>Напої</option>
+            </select>
+        `;
+
+        editButtonCell.innerHTML = `<button class="btn-save" data-menuid="${menuId}">Save</button>`;
+        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-menuid="${menuId}">Cancel</button>`;
+    }
+
+    async function handleSave(menuId) {
+        if (!menuId) {
+            console.error('Error: Menu ID is undefined');
+            return;
+        }
+    
+        const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
+    
+        const token = localStorage.getItem('token');
+        const name = row.cells[0].querySelector('input').value;
+        const size = row.cells[1].querySelector('input').value;
+        const price = row.cells[2].querySelector('input').value;
+        const info = row.cells[3].querySelector('input').value;
+        const type = row.cells[4].querySelector('select').value;
+    
+        if (!name || !size || !price || !info || !type) {
+            alert('Please fill in all fields');
+            return;
+        }
+    
+        console.log("fields:", name, size, price, info, type);
+    
+        try {
+            const restaurantId = await fetchStaff(); // Очікування результату виклику
+            if (!restaurantId) {
+                console.error('Error: Could not fetch restaurant ID');
+                return;
+            }
+            console.log(restaurantId);
+    
+            const response = await fetch(`${apiUrl}${menuId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    restaurantId: restaurantId,
+                    name: name,
+                    size: size,
+                    price: price,
+                    info: info,
+                    type: type
+                })
+            });
+    
+            if (response.ok) {
+                alert('Dish or drink was updated successfully!');
+                location.reload();
+            } else {
+                const error = await response.json(); // Parsing response body as JSON
+                console.error('Error:', error);
+            }
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    }
+
+    function handleCancel(menuId) {
+        if (!menuId) {
+            console.error('Error: Menu ID is undefined');
+            return;
+        }
+
+        const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
+
+        const name = row.cells[0].querySelector('input').value;
+        const size = row.cells[1].querySelector('input').value;
+        const price = row.cells[2].querySelector('input').value;
+        const info = row.cells[3].querySelector('input').value;
+        const type = row.cells[4].querySelector('select').value;
+
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>${size}</td>
+            <td>${price}</td>
+            <td>${info}</td>
+            <td>${type}</td>
+            <td><button class="btn-edit" data-menuid="${menuId}">Edit</button></td>
+            <td><button class="btn-delete" data-menuid="${menuId}">Delete</button></td>
+        `;
+    }
+
+    filterButton.addEventListener('click', async function() {
+        const selectedFilter = getSelectedFilter();
+        const restaurantId = await fetchStaff();
+        if (restaurantId) {
+            const endpoint = getEndpoint(selectedFilter, restaurantId);
+            fetchMenu(endpoint);
+        }
+    });
+
+
     async function handleAdd() {
         try {
             const token = localStorage.getItem('token');
@@ -247,19 +292,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
 
-            const response = await fetch(`${apiUrl}restaurant/${restaurantId}/menu`, {
+            const response = await fetch(`https://localhost:7206/api/Menu`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    restaurantId: restaurantId,
                     name: name,
                     size: size,
                     price: price,
                     info: info,
                     type: type,
-                    RestaurantId: restaurantId // Добавляем RestaurantId в запрос
                 })
             });
 
@@ -293,6 +338,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else if (target.classList.contains('btn-delete')) {
             const menuId = target.dataset.menuid;
             handleDelete(menuId);
+        }else if (target.classList.contains('btn-save')) {
+            const menuId = target.dataset.menuid;
+            handleSave(menuId);
+        }else if (target.classList.contains('btn-cancel')) {
+            const menuId = target.dataset.menuid;
+            handleCancel(menuId);
         }
     });
 
