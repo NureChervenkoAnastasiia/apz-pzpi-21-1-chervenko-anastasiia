@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Admin Panel</title>
-    <link rel="stylesheet" href="../css/Menu.css">
+    <title>Tastify</title>
+    <link rel="stylesheet" href="../../css/Menu.css">
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
     <div class="sidebar">
         <h2>Hello, Admin!</h2>
         <ul>
-            <li>Orders</li>
-            <li>Bookings</li>
-            <li>Tables</li>
-            <li>Staff</li>
-            <li>Schedule</li>
-            <li>Products</li>
-            <li>Restaurant</li>
-            <li>Database</li>
-            <li>Log out</li>
+            <li id="orders">Orders</li>
+            <li id="bookings">Bookings</li>
+            <li id="tables">Tables</li>
+            <li id="staff">Staff</li>
+            <li id="schedule">Schedule</li>
+            <li id="products">Products</li>
+            <li id="restaurant">Restaurant</li>
+            <li id="database">Database</li>
+            <li id="logout">Log out</li>
         </ul>
-        <img src="../../public/images/logo-light.png" class="logo">
+        <img src="../../../public/images/logo-light.png" class="logo">
     </div>
     <div class="content">
         <div class="header">
@@ -58,10 +58,10 @@
                 </tbody>
                 <tfoot>
                     <tr class="fill-in-fields">
-                        <td><input type="text" placeholder="Fill in" id="input-name"></td>
-                        <td><input type="text" placeholder="Fill in" id="input-size"></td>
-                        <td><input type="text" placeholder="Fill in" id="input-price"></td>
-                        <td><input type="text" placeholder="Fill in" id="input-info"></td>
+                        <td><input type="text" placeholder="Name" id="input-name"></td>
+                        <td><input type="text" placeholder="Size" id="input-size"></td>
+                        <td><input type="text" placeholder="Price" id="input-price"></td>
+                        <td><input type="text" placeholder="Info" id="input-info"></td>
                         <td>
                             <select id="input-type">
                                 <option value="Перші страви">Перші страви</option>
@@ -75,6 +75,7 @@
             </table>
         </div>
     </div>
-    <script src="../components/AdminMenu.js"></script>
+    <script src="../../components/admin/Menu.js"></script>
+    <script src="../../App.js"></script>
 </body>
 </html>

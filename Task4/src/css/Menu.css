@@ -223,12 +223,22 @@ input[type="text"] {
     transition: background-color 0.3s;
 }
 
-.btn-edit:hover, .btn-delete:hover, .btn-add:hover {
+.btn-save {
+    background-color: #99FF99;
+    font-family: "Montserrat-Bold";
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn-edit:hover, .btn-delete:hover, .btn-add:hover, .btn-cancel:hover, .btn-save:hover {
     background-color: #333;
     color: white;
 }
 
-.btn-delete {
+.btn-delete, .btn-cancel {
     background-color: #FF6666;
     font-family: "Montserrat-Bold";
     border: none;

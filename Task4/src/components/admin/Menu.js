@@ -1,51 +1,62 @@
 document.addEventListener('DOMContentLoaded', async function() {
+    const apiUrl = 'https://localhost:7206/api/Menu/';
     const filterButton = document.getElementById('filter-button');
     const menuTableBody = document.querySelector('#menu-table tbody');
     const menuTableContainer = document.querySelector('.table-container');
     const popularityContainer = document.getElementById('popularity-container');
-    const apiUrl = 'https://localhost:7206/api/Menu/';
 
-    async function fetchStaff() {
+    const getToken = () => localStorage.getItem('token');
+
+    const getUserData = () => {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        if (!userData || !userData.nameid) {
+            console.error('Error: User data not found in localStorage');
+            return null;
+        }
+        return userData;
+    };
+
+    const fetchStaff = async () => {
+        const userData = getUserData();
+        if (!userData) return null;
+
+        const token = getToken();
+        if (!token) {
+            console.error('Error: Token not found in localStorage');
+            return null;
+        }
+
         try {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            if (!userData || !userData.nameid) {
-                console.error('Error: User data not found in localStorage');
-                return;
-            }
-
-            const userId = userData.nameid;
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.error('Error: Token not found in localStorage');
-                return;
-            }
-
-            const response = await fetch(`https://localhost:7206/api/staff/${userId}`, {
+            const response = await fetch(`https://localhost:7206/api/staff/${userData.nameid}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
+
             if (response.ok) {
                 const staffData = await response.json();
                 return staffData.restaurantId;
             } else {
                 const error = await response.text();
                 console.error('Error:', error);
+                return null;
             }
         } catch (error) {
             console.error('Error:', error.message);
+            return null;
         }
-    }
+    };
 
-    async function fetchMenu(endpoint) {
+    const fetchMenu = async (endpoint) => {
         try {
             const response = await fetch(endpoint, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${getToken()}`,
                     'Content-Type': 'application/json'
                 }
             });
+
             if (response.ok) {
                 const data = await response.json();
                 if (endpoint.includes('dishes-rating')) {
@@ -60,9 +71,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (error) {
             console.error('Error:', error.message);
         }
-    }
+    };
 
-    function displayMenu(menuItems) {
+    const displayMenu = (menuItems) => {
         menuTableBody.innerHTML = '';
         popularityContainer.style.display = 'none';
         menuTableContainer.style.display = 'block';
@@ -80,9 +91,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             `;
             menuTableBody.appendChild(row);
         });
-    }
+    };
 
-    function displayPopularity(popularityItems) {
+    const displayPopularity = (popularityItems) => {
         menuTableContainer.style.display = 'none';
         popularityContainer.style.display = 'block';
         popularityContainer.innerHTML = '';
@@ -92,14 +103,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             popularityEntry.textContent = `${item.name} - ${item.ordersCount} замовлень`;
             popularityContainer.appendChild(popularityEntry);
         });
-    }
+    };
 
-    function getSelectedFilter() {
-        const selectedFilter = document.querySelector('input[name="filter"]:checked').value;
-        return selectedFilter;
-    }
+    const getSelectedFilter = () => document.querySelector('input[name="filter"]:checked').value;
 
-    function getEndpoint(filter, restaurantId) {
+    const getEndpoint = (filter, restaurantId) => {
         switch (filter) {
             case 'first-dishes':
                 return `${apiUrl}restaurant/${restaurantId}/first-dishes`;
@@ -112,16 +120,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             default:
                 return `${apiUrl}restaurant/${restaurantId}/menu`;
         }
-    }
+    };
 
-    async function handleDelete(menuId) {
+    const handleDelete = async (menuId) => {
         if (!menuId) {
             console.error('Error: Menu ID is undefined');
             return;
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const response = await fetch(`${apiUrl}${menuId}`, {
                 method: 'DELETE',
                 headers: {
@@ -129,9 +137,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Content-Type': 'application/json'
                 }
             });
+
             if (response.ok) {
                 alert('Dish or drink was deleted successfully!');
-                location.reload();
+                await fetchMenu();
             } else {
                 const error = await response.text();
                 console.error('Error:', error);
@@ -139,23 +148,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (error) {
             console.error('Error:', error.message);
         }
-    }
+    };
 
-    function handleEdit(menuId) {
+    const handleEdit = (menuId) => {
         if (!menuId) {
             console.error('Error: Menu ID is undefined');
             return;
         }
 
         const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
-
-        const nameCell = row.cells[0];
-        const sizeCell = row.cells[1];
-        const priceCell = row.cells[2];
-        const infoCell = row.cells[3];
-        const typeCell = row.cells[4];
-        const editButtonCell = row.cells[5];
-        const deleteButtonCell = row.cells[6];
+        const [nameCell, sizeCell, priceCell, infoCell, typeCell, editButtonCell, deleteButtonCell] = row.cells;
 
         const name = nameCell.textContent;
         const size = sizeCell.textContent;
@@ -168,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         priceCell.innerHTML = `<input type="text" value="${price}">`;
         infoCell.innerHTML = `<input type="text" value="${info}">`;
         typeCell.innerHTML = `
-            <select>
+            <select id="input-type">
                 <option value="Перші страви" ${type === 'Перші страви' ? 'selected' : ''}>Перші страви</option>
                 <option value="Другі страви" ${type === 'Другі страви' ? 'selected' : ''}>Другі страви</option>
                 <option value="Напої" ${type === 'Напої' ? 'selected' : ''}>Напої</option>
@@ -177,38 +179,34 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         editButtonCell.innerHTML = `<button class="btn-save" data-menuid="${menuId}">Save</button>`;
         deleteButtonCell.innerHTML = `<button class="btn-cancel" data-menuid="${menuId}">Cancel</button>`;
-    }
+    };
 
-    async function handleSave(menuId) {
+    const handleSave = async (menuId) => {
         if (!menuId) {
             console.error('Error: Menu ID is undefined');
             return;
         }
-    
+
         const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
-    
-        const token = localStorage.getItem('token');
+        const token = getToken();
         const name = row.cells[0].querySelector('input').value;
         const size = row.cells[1].querySelector('input').value;
         const price = row.cells[2].querySelector('input').value;
         const info = row.cells[3].querySelector('input').value;
         const type = row.cells[4].querySelector('select').value;
-    
+
         if (!name || !size || !price || !info || !type) {
             alert('Please fill in all fields');
             return;
         }
-    
-        console.log("fields:", name, size, price, info, type);
-    
+
         try {
-            const restaurantId = await fetchStaff(); // Очікування результату виклику
+            const restaurantId = await fetchStaff();
             if (!restaurantId) {
                 console.error('Error: Could not fetch restaurant ID');
                 return;
             }
-            console.log(restaurantId);
-    
+
             const response = await fetch(`${apiUrl}${menuId}`, {
                 method: 'PUT',
                 headers: {
@@ -224,27 +222,26 @@ document.addEventListener('DOMContentLoaded', async function() {
                     type: type
                 })
             });
-    
+
             if (response.ok) {
                 alert('Dish or drink was updated successfully!');
-                location.reload();
+                await fetchMenu();
             } else {
-                const error = await response.json(); // Parsing response body as JSON
+                const error = await response.json();
                 console.error('Error:', error);
             }
         } catch (error) {
             console.error('Error:', error.message);
         }
-    }
+    };
 
-    function handleCancel(menuId) {
+    const handleCancel = (menuId) => {
         if (!menuId) {
             console.error('Error: Menu ID is undefined');
             return;
         }
 
         const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
-
         const name = row.cells[0].querySelector('input').value;
         const size = row.cells[1].querySelector('input').value;
         const price = row.cells[2].querySelector('input').value;
@@ -260,21 +257,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td><button class="btn-edit" data-menuid="${menuId}">Edit</button></td>
             <td><button class="btn-delete" data-menuid="${menuId}">Delete</button></td>
         `;
-    }
+    };
 
-    filterButton.addEventListener('click', async function() {
-        const selectedFilter = getSelectedFilter();
-        const restaurantId = await fetchStaff();
-        if (restaurantId) {
-            const endpoint = getEndpoint(selectedFilter, restaurantId);
-            fetchMenu(endpoint);
-        }
-    });
-
-
-    async function handleAdd() {
+    const handleAdd = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const name = document.getElementById('input-name').value;
             const size = document.getElementById('input-size').value;
             const price = document.getElementById('input-price').value;
@@ -292,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
 
-            const response = await fetch(`https://localhost:7206/api/Menu`, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -310,7 +297,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (response.ok) {
                 alert('Dish or drink was added successfully!');
-                location.reload();
+                await fetchMenu();
             } else {
                 const error = await response.text();
                 console.error('Error:', error);
@@ -318,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (error) {
             console.error('Error:', error.message);
         }
-    }
+    };
 
     filterButton.addEventListener('click', async function() {
         const filter = getSelectedFilter();
@@ -338,10 +325,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else if (target.classList.contains('btn-delete')) {
             const menuId = target.dataset.menuid;
             handleDelete(menuId);
-        }else if (target.classList.contains('btn-save')) {
+        } else if (target.classList.contains('btn-save')) {
             const menuId = target.dataset.menuid;
             handleSave(menuId);
-        }else if (target.classList.contains('btn-cancel')) {
+        } else if (target.classList.contains('btn-cancel')) {
             const menuId = target.dataset.menuid;
             handleCancel(menuId);
         }
@@ -357,4 +344,3 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Error: Could not fetch restaurant ID');
     }
 });
-
