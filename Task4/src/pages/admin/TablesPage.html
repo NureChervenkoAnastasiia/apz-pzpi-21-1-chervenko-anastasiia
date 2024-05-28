@@ -13,12 +13,12 @@
         <ul>
             <li id="orders">Orders</li>
             <li id="bookings">Bookings</li>
-            <li id="tables">Tables</li>
+            <li class="sidebar-selected" id="tables">Tables</li>
             <li id="staff">Staff</li>
             <li id="schedule">Schedule</li>
             <li id="restaurant">Restaurant</li>
             <li id="menu">Menu</li>
-            <li class="sidebar-selected" id="products">Products</li>
+            <li id="products">Products</li>
             <li id="database">Database</li>
             <li id="logout">Log out</li>
         </ul>
@@ -26,24 +26,14 @@
     </div>
     <div class="content">
         <div class="header">
-            <h1>Products</h1>
-            <div class="buttons">
-                <div class="sort">
-                    <label>Sort by:</label>
-                    <input type="radio" name="sort" value="name-asc" id="sort-name-asc"> name (a-z)
-                    <input type="radio" name="sort" value="name-desc" id="sort-name-desc" checked> name (z-a)
-                    <input type="radio" name="sort" value="amount-asc" id="sort-amount-asc"> amount (asc)
-                    <input type="radio" name="sort" value="amount-desc" id="sort-amount-desc"> amount (desc)
-                    <button id="sort-button">Go</button>
-                </div>
-            </div>
+            <h1>Tables</h1>
         </div>
         <div class="table-container">
             <table id="tables-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Amount</th>
+                        <th>Number</th>
+                        <th>Status</th>
                         <th>Edit</th>
                         <th>Delete</th>
                     </tr>
@@ -53,15 +43,20 @@
                 </tbody>
                 <tfoot>
                     <tr class="fill-in-fields">
-                        <td><input type="text" placeholder="Name" id="input-name"></td>
-                        <td><input type="number" placeholder="Amount" step="any" id="input-amount"></td>
+                        <td><input type="number" placeholder="Number" id="input-number"></td>
+                        <td>
+                            <select id="input-status">
+                                <option value="Вільний">Вільний</option>
+                                <option value="Занято">Занято</option>
+                            </select>
+                        </td>
                         <td colspan="2"><button class="btn-add">Add New</button></td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
-    <script src="../../components/admin/Product.js"></script>
+    <script src="../../components/admin/Table.js"></script>
     <script src="../../App.js"></script>
 </body>
 </html>

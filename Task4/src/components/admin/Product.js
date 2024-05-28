@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const apiUrl = 'https://localhost:7206/api/Product/';
     const sortButton = document.getElementById('sort-button');
-    const productsTableBody = document.querySelector('#products-table tbody');
+    const productsTableBody = document.querySelector('#tables-table tbody'); // Corrected ID
     const addButton = document.querySelector('.btn-add');
 
     const getToken = () => localStorage.getItem('token');
+
+    let products = [];
 
     const fetchProducts = async () => {
         try {
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
 
             if (response.ok) {
-                let products = await response.json();
+                products = await response.json();
 
                 if (!Array.isArray(products)) {
                     console.error('Fetched products is not an array:', products);
@@ -179,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (response.ok) {
                 alert('Product was added successfully!');
-                await fetchProducts(); // Refetch products instead of reloading the page
+                await fetchProducts();
             } else {
                 const error = await response.text();
                 console.error('Error:', error);

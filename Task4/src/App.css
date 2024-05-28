@@ -84,6 +84,10 @@ body {
     background-color: #444;
 }
 
+.sidebar-selected{
+    background-color: #444;
+}
+
 .content {
     flex-grow: 1;
     padding: 20px;
@@ -189,14 +193,14 @@ td {
     background-color: #fafafa;
 }
 
-#input-type{
+#input-type, #input-table, #input-status, #input-datetime{
     font-family: "Montserrat";
     color: #000;
     font-weight: 700;
     background-color: #fafafa;
 }
 
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"], input[type="datetime-local"] {
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
