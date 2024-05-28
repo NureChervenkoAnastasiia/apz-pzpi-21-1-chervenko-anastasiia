@@ -193,8 +193,9 @@ td {
     background-color: #fafafa;
 }
 
-#input-type, #input-table, #input-status, #input-datetime{
+#input-type, #input-table, #input-status, #input-datetime, #input-guest{
     font-family: "Montserrat";
+    font-weight: 900;
     color: #000;
     font-weight: 700;
     background-color: #fafafa;
@@ -217,7 +218,7 @@ input[type="text"], input[type="number"], input[type="datetime-local"] {
     width: 100px;
 }
 
-.btn-edit {
+.btn-edit, .restore-button {
     background-color: #FFFF99;
     font-family: "Montserrat-Bold";
     border: none;

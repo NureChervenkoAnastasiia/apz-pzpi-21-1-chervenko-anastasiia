@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   databasePage.addEventListener("click", function() {
-    window.location.href = "DataManagingPage.html";
+    window.location.href = "DataPage.html";
   });
 
   logoutPage.addEventListener("click", function() {
