@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <td>${tableNumber}</td>
                 <td>${guestName}</td>
                 <td>${formattedDateTime}</td>
-                <td>${booking.persons}</td>
+                <td>${booking.personsCount}</td>
                 <td>${booking.comment}</td>
                 <td><button class="btn-edit" data-bookingid="${booking.id}">Edit</button></td>
                 <td><button class="btn-delete" data-bookingid="${booking.id}">Delete</button></td>
@@ -163,9 +163,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const formatDateTime = (dateTime) => {
         const date = new Date(dateTime);
-        const formattedDate = date.toISOString().slice(0, 10); // YYYY-MM-DD format
-        const formattedTime = date.toISOString().slice(11, 16); // HH:MM format
-        return `${formattedDate}T${formattedTime}`;
+        const formattedDate = date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+        const formattedTime = date.toLocaleTimeString('en-GB'); // HH:MM:SS format
+        return `Дата: ${formattedDate}<br>Час: ${formattedTime}`;
     };
 
     const handleDelete = async (bookingId) => {
@@ -196,13 +196,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         const tableNumber = tableCell.textContent;
         const guestName = guestCell.textContent;
         const dateTime = dateTimeCell.textContent;
-        const persons = personsCell.textContent;
+        const personsCount = personsCell.textContent;
         const comment = commentCell.textContent;
 
         tableCell.innerHTML = `<select>${document.getElementById('input-table').innerHTML}</select>`;
         guestCell.innerHTML = `<select>${document.getElementById('input-guest').innerHTML}</select>`;
         dateTimeCell.innerHTML = `<input type="datetime-local" value="${formatDateTime(dateTime)}">`;
-        personsCell.innerHTML = `<input type="number" value="${persons}">`;
+        personsCell.innerHTML = `<input type="number" value="${personsCount}">`;
         commentCell.innerHTML = `<input type="text" value="${comment}">`;
 
         // Set the correct table and guest selection
@@ -218,10 +218,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         const tableId = row.cells[0].querySelector('select').value;
         const guestId = row.cells[1].querySelector('select').value;
         const bookingDateTime = row.cells[2].querySelector('input').value;
-        const persons = row.cells[3].querySelector('input').value;
+        const personsCount = row.cells[3].querySelector('input').value;
         const comment = row.cells[4].querySelector('input').value;
 
-        if (!tableId || !guestId || !bookingDateTime || !persons) {
+        if (!tableId || !guestId || !bookingDateTime || !personsCount) {
             alert('Please fill in all fields');
             return;
         }
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Authorization': `Bearer ${getToken()}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ tableId, guestId, bookingDateTime, persons, comment })
+                body: JSON.stringify({ tableId, guestId, bookingDateTime, personsCount, comment })
             });
 
             if (response.ok) {
@@ -255,10 +255,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         const tableId = document.getElementById('input-table').value;
         const guestId = document.getElementById('input-guest').value;
         const bookingDateTime = document.getElementById('input-datetime').value;
-        const persons = document.getElementById('input-number').value;
+        const personsCount = document.getElementById('input-number').value;
         const comment = document.getElementById('input-text').value;
 
-        if (!tableId || !guestId || !bookingDateTime || !persons) {
+        if (!tableId || !guestId || !bookingDateTime || !personsCount) {
             alert('Please fill in all fields');
             return;
         }
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Authorization': `Bearer ${getToken()}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ tableId, guestId, bookingDateTime, persons, comment })
+                body: JSON.stringify({ tableId, guestId, bookingDateTime, personsCount, comment })
             });
 
             if (response.ok) {

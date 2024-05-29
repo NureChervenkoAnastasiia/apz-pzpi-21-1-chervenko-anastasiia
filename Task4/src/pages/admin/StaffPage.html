@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tastify</title>
+    <link rel="stylesheet" href="../../App.css">
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hello, Admin!</h2>
+        <ul>
+            <li id="orders">Orders</li>
+            <li id="bookings">Bookings</li>
+            <li id="tables">Tables</li>
+            <li class="sidebar-selected" id="staff">Staff</li>
+            <li id="schedule">Schedule</li>
+            <li id="restaurant">Restaurant</li>
+            <li id="menu">Menu</li>
+            <li id="products">Products</li>
+            <li id="database">Data</li>
+            <li id="logout">Log out</li>
+        </ul>
+        <img src="../../../public/images/logo-light.png" class="logo">
+    </div>
+    <div class="content">
+        <div class="header">
+            <h1>Staff</h1>
+        </div>
+        <div id="popularity-container" style="display:none;"></div>
+
+        <label for="input-date">Choose first day of week to get workers hours report</label><hr>
+        <input type="date" id="input-date">
+        <button class="btn-fetch-hours">Get workers report</button>
+        <div id="working-hours-container"></div> <!-- Удалено display:none -->
+
+        <div class="table-container">
+            <table id="staff-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Hourly salary</th>
+                        <th>Phone</th>
+                        <th>Attendance Card</th>
+                        <th>Login</th>
+                        <th>Restaurant</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr class="fill-in-fields">
+                        <td><input type="text" placeholder="Name" id="input-name"></td>
+                        <td>
+                            <select id="input-position">
+                                <option value="Кухар">Кухар</option>
+                                <option value="Офіціант">Офіціант</option>
+                                <option value="Помічник">Помічник</option>
+                                <option value="Адміністратор">Адміністратор</option>
+                            </select>
+                        </td>
+                        <td><input type="number" placeholder="Hourly Salary" id="input-salary"></td>
+                        <td><input type="number" placeholder="Phone" id="input-phone"></td>
+                        <td><input type="number" placeholder="Attendance Card" id="input-card"></td>
+                        <td><input type="text" placeholder="Login" id="input-login"></td>
+                        <td>
+                            <select id="input-restaurant">
+                                <!-- Restaurant names will be populated by JavaScript -->
+                            </select>
+                        </td>
+                        <td colspan="2"><button class="btn-add">Add New</button></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <script src="../../components/admin/Staff.js"></script>
+    <script src="../../App.js"></script>
+</body>
+</html>

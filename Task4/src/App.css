@@ -201,7 +201,7 @@ td {
     background-color: #fafafa;
 }
 
-input[type="text"], input[type="number"], input[type="datetime-local"] {
+input[type="text"], input[type="number"], input[type="datetime-local"], input[type="date"] {
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
@@ -228,7 +228,7 @@ input[type="text"], input[type="number"], input[type="datetime-local"] {
     transition: background-color 0.3s;
 }
 
-.btn-save {
+.btn-save, .btn-fetch-hours {
     background-color: #99FF99;
     font-family: "Montserrat-Bold";
     border: none;
