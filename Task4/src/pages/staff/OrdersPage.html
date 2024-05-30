@@ -9,45 +9,40 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Hello, Admin!</h2>
+        <h2>Hello, Worker!</h2>
         <ul>
-            <li id="orders">Orders</li>
-            <li id="bookings">Bookings</li>
+            <li class="sidebar-selected"  id="orders">Orders</li>
             <li id="tables">Tables</li>
-            <li id="staff">Staff</li>
+            <li id="profile">My Profile</li>
             <li id="schedule">Schedule</li>
-            <li id="restaurant">Restaurant</li>
             <li id="menu">Menu</li>
-            <li id="products">Products</li>
-            <li  class="sidebar-selected" id="database">Database</li>
             <li id="logout">Log out</li>
         </ul>
         <img src="../../../public/images/logo-light.png" class="logo">
     </div>
     <div class="content">
         <div class="header">
-            <h1>Data management</h1>
+            <h1>Orders</h1>
         </div>
-        <div class="backups-container">
-            <table id="backups-table">
+        <div class="table-container">
+            <table id="orders-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Restore database</th>
+                        <th>Number</th>
+                        <th>Table</th>
+                        <th>Date and time</th>
+                        <th>Comment</th>
+                        <th>Status</th>
+                        <th>Edit</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- Rows will be populated by JavaScript -->
                 </tbody>
-                <tfoot>
-                    <td colspan="2">
-                        <button class="btn-add" id="create-backup-btn">Make database backup</button>
-                    </td>
-                </tfoot>
             </table>
         </div>
     </div>
-    <script src="../../components/admin/DataManagement.js"></script>
+    <script src="../../components/staff/Order.js"></script>
     <script src="../../App.js"></script>
 </body>
 </html>

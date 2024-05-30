@@ -20,13 +20,16 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
               const decodedToken = jwt_decode(data.token);
               console.log('Decoded Token:', decodedToken);
+              
+              localStorage.setItem('userData', JSON.stringify(decodedToken));
+
 
               if (decodedToken.role === 'admin') {
                 console.log('hello admin');
                   window.location.href = './admin/MenuPage.html';
               } else {
                 console.log('hello staff');
-                  window.location.href = 'StaffProfilePage.html';
+                  window.location.href = './staff/ProfilePage.html';
               }
           } else {
               console.error('Error: Token not found in response');

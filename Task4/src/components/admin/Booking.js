@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     const apiUrl = 'https://localhost:7206/api/Booking/';
     const tablesApiUrl = 'https://localhost:7206/api/Table/';
     const guestsApiUrl = 'https://localhost:7206/api/Guest/';
@@ -7,139 +7,77 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const getToken = () => localStorage.getItem('token');
 
-    const fetchBookings = async () => {
-        try {
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    const fetchWithAuth = async (url, options = {}) => {
+        const token = getToken();
+        if (!token) {
+            console.error('Error: Token not found in localStorage');
+            return null;
+        }
 
-            if (response.ok) {
-                const bookings = await response.json();
-                displayBookings(bookings);
-            } else {
-                console.error('Error:', await response.text());
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers,
+        };
+
+        try {
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('Error:', error);
+                return null;
             }
+            return await response.json();
         } catch (error) {
             console.error('Error:', error.message);
+            return null;
+        }
+    };
+
+    const fetchBookings = async () => {
+        const bookings = await fetchWithAuth(apiUrl);
+        if (bookings) {
+            displayBookings(bookings);
         }
     };
 
     const fetchTables = async () => {
-        try {
-            const response = await fetch(tablesApiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const tables = await response.json();
-                populateTablesDropdown(tables);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const tables = await fetchWithAuth(tablesApiUrl);
+        if (tables) {
+            populateDropdown('input-table', tables, 'number');
         }
     };
 
     const fetchGuests = async () => {
-        try {
-            const response = await fetch(guestsApiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const guests = await response.json();
-                populateGuestsDropdown(guests);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const guests = await fetchWithAuth(guestsApiUrl);
+        if (guests) {
+            populateDropdown('input-guest', guests, 'name');
         }
     };
 
-    const populateTablesDropdown = (tables) => {
-        const tableDropdown = document.getElementById('input-table');
-        tableDropdown.innerHTML = '';
+    const populateDropdown = (elementId, items, textProperty) => {
+        const dropdown = document.getElementById(elementId);
+        dropdown.innerHTML = '';
 
-        tables.forEach(table => {
+        items.forEach(item => {
             const option = document.createElement('option');
-            option.value = table.id;
-            option.textContent = table.number;
-            tableDropdown.appendChild(option);
+            option.value = item.id;
+            option.textContent = item[textProperty];
+            dropdown.appendChild(option);
         });
     };
 
-    const populateGuestsDropdown = (guests) => {
-        const guestDropdown = document.getElementById('input-guest');
-        guestDropdown.innerHTML = '';
-
-        guests.forEach(guest => {
-            const option = document.createElement('option');
-            option.value = guest.id;
-            option.textContent = guest.name;
-            guestDropdown.appendChild(option);
-        });
-    };
-
-    const getTableNumberById = async (tableId) => {
-        try {
-            const response = await fetch(`${tablesApiUrl}${tableId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const table = await response.json();
-                return table.number;
-            } else {
-                console.error('Error:', await response.text());
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-            return null;
-        }
-    };
-
-    const getGuestNameById = async (guestId) => {
-        try {
-            const response = await fetch(`${guestsApiUrl}${guestId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const guest = await response.json();
-                return guest.name;
-            } else {
-                console.error('Error:', await response.text());
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-            return null;
-        }
+    const getItemPropertyById = async (url, id, property) => {
+        const item = await fetchWithAuth(`${url}${id}`);
+        return item ? item[property] : null;
     };
 
     const displayBookings = async (bookings) => {
         bookingsTableBody.innerHTML = '';
+
         for (const booking of bookings) {
-            const tableNumber = await getTableNumberById(booking.tableId);
-            const guestName = await getGuestNameById(booking.guestId);
+            const tableNumber = await getItemPropertyById(tablesApiUrl, booking.tableId, 'number');
+            const guestName = await getItemPropertyById(guestsApiUrl, booking.guestId, 'name');
             if (!tableNumber || !guestName) {
                 console.error(`Table or guest not found for booking with ID ${booking.id}`);
                 continue;
@@ -169,23 +107,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     const handleDelete = async (bookingId) => {
-        try {
-            const response = await fetch(`${apiUrl}${bookingId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                alert('Booking was deleted successfully!');
-                await fetchBookings(); 
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchWithAuth(`${apiUrl}${bookingId}`, { method: 'DELETE' });
+        if (response) {
+            alert('Booking was deleted successfully!');
+            await fetchBookings();
         }
     };
 
@@ -205,7 +130,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         personsCell.innerHTML = `<input type="number" value="${personsCount}">`;
         commentCell.innerHTML = `<input type="text" value="${comment}">`;
 
-        // Set the correct table and guest selection
         tableCell.querySelector('select').value = tableNumber;
         guestCell.querySelector('select').value = guestName;
 
@@ -226,29 +150,19 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(`${apiUrl}${bookingId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ tableId, guestId, bookingDateTime, personsCount, comment })
-            });
+        const response = await fetchWithAuth(`${apiUrl}${bookingId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ tableId, guestId, bookingDateTime, personsCount, comment })
+        });
 
-            if (response.ok) {
-                alert('Booking was updated successfully!');
-                await fetchBookings(); // Refetch bookings instead of reloading the page
-            } else {
-                console.error('Error:', await response.json());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Booking was updated successfully!');
+            await fetchBookings();
         }
     };
 
-    const handleCancel = (bookingId) => {
-        fetchBookings(); // Simply refetch the bookings to reset the table
+    const handleCancel = () => {
+        fetchBookings();
     };
 
     const handleAdd = async () => {
@@ -263,24 +177,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ tableId, guestId, bookingDateTime, personsCount, comment })
-            });
+        const response = await fetchWithAuth(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({ tableId, guestId, bookingDateTime, personsCount, comment })
+        });
 
-            if (response.ok) {
-                alert('Booking was added successfully!');
-                await fetchBookings(); 
-            } else {
-                console.error('Error:', await response.json());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Booking was added successfully!');
+            await fetchBookings();
         }
     };
 
@@ -293,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else if (event.target.classList.contains('btn-save')) {
             await handleSave(bookingId);
         } else if (event.target.classList.contains('btn-cancel')) {
-            handleCancel(bookingId);
+            handleCancel();
         }
     });
 

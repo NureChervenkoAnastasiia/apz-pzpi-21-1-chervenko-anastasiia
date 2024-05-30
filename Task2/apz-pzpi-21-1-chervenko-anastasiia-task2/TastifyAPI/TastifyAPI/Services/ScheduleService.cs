@@ -22,9 +22,7 @@ namespace TastifyAPI.Services
                 s.FinishDateTime = s.FinishDateTime?.ToLocalTime();
             }
 
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             return schedules;
-#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         public async Task<Schedule?> GetByIdAsync(string id)
@@ -54,8 +52,21 @@ namespace TastifyAPI.Services
 
         public async Task RemoveAsync(string id) =>
             await _scheduleCollection.DeleteOneAsync(x => x.Id == id);
-        public async Task<Schedule?> GetByStaffAsync(string id) =>
-            await _scheduleCollection.Find(x => x.StaffId == id).FirstOrDefaultAsync();
+        /*public async Task<List<Schedule?>> GetByStaffAsync(string id) =>
+            await _scheduleCollection.Find(x => x.StaffId == id).FirstOrDefaultAsync();*/
+
+        public async Task<List<Schedule?>> GetByStaffAsync(string id)
+        {
+            var staffSchedules = await _scheduleCollection.Find(x => x.StaffId == id).ToListAsync();
+
+            foreach (var s in staffSchedules)
+            {
+                s.StartDateTime = s.StartDateTime?.ToLocalTime();
+                s.FinishDateTime = s.FinishDateTime?.ToLocalTime();
+            }
+
+            return staffSchedules;
+        }
 
     }
 }

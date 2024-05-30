@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using TastifyAPI.DTOs;
 using TastifyAPI.Entities;
 using TastifyAPI.Helpers;
@@ -37,7 +38,7 @@ namespace TastifyAPI.Controllers
         /// <returns>
         /// A list of ScheduleDto.
         /// </returns>
-        [Authorize(Roles = Roles.Administrator)]
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
         [HttpGet]
         public async Task<ActionResult<List<ScheduleDto>>> GetAllSchedules()
         {
@@ -209,16 +210,16 @@ namespace TastifyAPI.Controllers
         /// </returns>
         [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
         [HttpGet("staff/{staffId:length(24)}")]
-        public async Task<ActionResult<ScheduleDto>> GetScheduleByStaff(string staffId)
+        public async Task<ActionResult<List<ScheduleDto>>> GetScheduleByStaff(string staffId)
         {
             try
             {
-                var schedule = await _scheduleService.GetByStaffAsync(staffId);
-                if (schedule == null)
+                var schedules = await _scheduleService.GetByStaffAsync(staffId);
+                if (schedules == null || schedules.Count == 0)
                     return NotFound();
 
-                var scheduleDto = _mapper.Map<ScheduleDto>(schedule);
-                return Ok(scheduleDto);
+                var scheduleDtos = _mapper.Map<List<ScheduleDto>>(schedules);
+                return Ok(scheduleDtos);
             }
             catch (Exception ex)
             {

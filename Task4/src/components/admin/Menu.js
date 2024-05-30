@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     const apiUrl = 'https://localhost:7206/api/Menu/';
     const filterButton = document.getElementById('filter-button');
     const menuTableBody = document.querySelector('#menu-table tbody');
@@ -16,60 +16,49 @@ document.addEventListener('DOMContentLoaded', async function() {
         return userData;
     };
 
-    const fetchStaff = async () => {
-        const userData = getUserData();
-        if (!userData) return null;
-
+    const fetchWithAuth = async (url, options = {}) => {
         const token = getToken();
         if (!token) {
             console.error('Error: Token not found in localStorage');
             return null;
         }
 
-        try {
-            const response = await fetch(`https://localhost:7206/api/staff/${userData.nameid}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers,
+        };
 
-            if (response.ok) {
-                const staffData = await response.json();
-                return staffData.restaurantId;
-            } else {
+        try {
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok) {
                 const error = await response.text();
                 console.error('Error:', error);
                 return null;
             }
+            return await response.json();
         } catch (error) {
             console.error('Error:', error.message);
             return null;
         }
     };
 
-    const fetchMenu = async (endpoint) => {
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    const fetchStaff = async () => {
+        const userData = getUserData();
+        if (!userData) return null;
 
-            if (response.ok) {
-                const data = await response.json();
-                if (endpoint.includes('dishes-rating')) {
-                    displayPopularity(data);
-                } else {
-                    displayMenu(data);
-                }
+        const staffData = await fetchWithAuth(`https://localhost:7206/api/staff/${userData.nameid}`);
+        return staffData ? staffData.restaurantId : null;
+    };
+
+    const fetchMenu = async (endpoint) => {
+        const data = await fetchWithAuth(endpoint);
+        if (data) {
+            if (endpoint.includes('dishes-rating')) {
+                displayPopularity(data);
             } else {
-                const error = await response.text();
-                console.error('Error:', error);
+                displayMenu(data);
             }
-        } catch (error) {
-            console.error('Error:', error.message);
         }
     };
 
@@ -108,18 +97,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const getSelectedFilter = () => document.querySelector('input[name="filter"]:checked').value;
 
     const getEndpoint = (filter, restaurantId) => {
-        switch (filter) {
-            case 'first-dishes':
-                return `${apiUrl}restaurant/${restaurantId}/first-dishes`;
-            case 'second-dishes':
-                return `${apiUrl}restaurant/${restaurantId}/second-dishes`;
-            case 'drinks':
-                return `${apiUrl}restaurant/${restaurantId}/drinks`;
-            case 'popularity':
-                return `${apiUrl}restaurant/${restaurantId}/dishes-rating`;
-            default:
-                return `${apiUrl}restaurant/${restaurantId}/menu`;
-        }
+        const endpoints = {
+            'first-dishes': `${apiUrl}restaurant/${restaurantId}/first-dishes`,
+            'second-dishes': `${apiUrl}restaurant/${restaurantId}/second-dishes`,
+            'drinks': `${apiUrl}restaurant/${restaurantId}/drinks`,
+            'popularity': `${apiUrl}restaurant/${restaurantId}/dishes-rating`,
+            'default': `${apiUrl}restaurant/${restaurantId}/menu`,
+        };
+        return endpoints[filter] || endpoints['default'];
     };
 
     const handleDelete = async (menuId) => {
@@ -128,25 +113,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const token = getToken();
-            const response = await fetch(`${apiUrl}${menuId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                alert('Dish or drink was deleted successfully!');
-                await fetchMenu();
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchWithAuth(`${apiUrl}${menuId}`, { method: 'DELETE' });
+        if (response) {
+            alert('Dish or drink was deleted successfully!');
+            await fetchMenu();
         }
     };
 
@@ -159,21 +129,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
         const [nameCell, sizeCell, priceCell, infoCell, typeCell, editButtonCell, deleteButtonCell] = row.cells;
 
-        const name = nameCell.textContent;
-        const size = sizeCell.textContent;
-        const price = priceCell.textContent;
-        const info = infoCell.textContent;
-        const type = typeCell.textContent;
-
-        nameCell.innerHTML = `<input type="text" value="${name}">`;
-        sizeCell.innerHTML = `<input type="text" value="${size}">`;
-        priceCell.innerHTML = `<input type="text" value="${price}">`;
-        infoCell.innerHTML = `<input type="text" value="${info}">`;
+        nameCell.innerHTML = `<input type="text" value="${nameCell.textContent}">`;
+        sizeCell.innerHTML = `<input type="text" value="${sizeCell.textContent}">`;
+        priceCell.innerHTML = `<input type="text" value="${priceCell.textContent}">`;
+        infoCell.innerHTML = `<input type="text" value="${infoCell.textContent}">`;
         typeCell.innerHTML = `
             <select id="input-type">
-                <option value="Перші страви" ${type === 'Перші страви' ? 'selected' : ''}>Перші страви</option>
-                <option value="Другі страви" ${type === 'Другі страви' ? 'selected' : ''}>Другі страви</option>
-                <option value="Напої" ${type === 'Напої' ? 'selected' : ''}>Напої</option>
+                <option value="Перші страви" ${typeCell.textContent === 'Перші страви' ? 'selected' : ''}>Перші страви</option>
+                <option value="Другі страви" ${typeCell.textContent === 'Другі страви' ? 'selected' : ''}>Другі страви</option>
+                <option value="Напої" ${typeCell.textContent === 'Напої' ? 'selected' : ''}>Напої</option>
             </select>
         `;
 
@@ -188,7 +152,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
-        const token = getToken();
         const name = row.cells[0].querySelector('input').value;
         const size = row.cells[1].querySelector('input').value;
         const price = row.cells[2].querySelector('input').value;
@@ -200,38 +163,20 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const restaurantId = await fetchStaff();
-            if (!restaurantId) {
-                console.error('Error: Could not fetch restaurant ID');
-                return;
-            }
+        const restaurantId = await fetchStaff();
+        if (!restaurantId) {
+            console.error('Error: Could not fetch restaurant ID');
+            return;
+        }
 
-            const response = await fetch(`${apiUrl}${menuId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    restaurantId: restaurantId,
-                    name: name,
-                    size: size,
-                    price: price,
-                    info: info,
-                    type: type
-                })
-            });
+        const response = await fetchWithAuth(`${apiUrl}${menuId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ restaurantId, name, size, price, info, type })
+        });
 
-            if (response.ok) {
-                alert('Dish or drink was updated successfully!');
-                await fetchMenu();
-            } else {
-                const error = await response.json();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Dish or drink was updated successfully!');
+            await fetchMenu();
         }
     };
 
@@ -242,11 +187,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         const row = document.querySelector(`button[data-menuid="${menuId}"]`).parentNode.parentNode;
-        const name = row.cells[0].querySelector('input').value;
-        const size = row.cells[1].querySelector('input').value;
-        const price = row.cells[2].querySelector('input').value;
-        const info = row.cells[3].querySelector('input').value;
-        const type = row.cells[4].querySelector('select').value;
+        const cells = row.cells;
+        const [name, size, price, info, type] = [cells[0].querySelector('input').value, cells[1].querySelector('input').value, cells[2].querySelector('input').value, cells[3].querySelector('input').value, cells[4].querySelector('select').value];
 
         row.innerHTML = `
             <td>${name}</td>
@@ -260,54 +202,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     const handleAdd = async () => {
-        try {
-            const token = getToken();
-            const name = document.getElementById('input-name').value;
-            const size = document.getElementById('input-size').value;
-            const price = document.getElementById('input-price').value;
-            const info = document.getElementById('input-info').value;
-            const type = document.getElementById('input-type').value;
+        const name = document.getElementById('input-name').value;
+        const size = document.getElementById('input-size').value;
+        const price = document.getElementById('input-price').value;
+        const info = document.getElementById('input-info').value;
+        const type = document.getElementById('input-type').value;
 
-            if (!name || !size || !price || !info || !type) {
-                alert('Please fill in all fields');
-                return;
-            }
+        if (!name || !size || !price || !info || !type) {
+            alert('Please fill in all fields');
+            return;
+        }
 
-            const restaurantId = await fetchStaff();
-            if (!restaurantId) {
-                console.error('Error: Could not fetch restaurant ID');
-                return;
-            }
+        const restaurantId = await fetchStaff();
+        if (!restaurantId) {
+            console.error('Error: Could not fetch restaurant ID');
+            return;
+        }
 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    restaurantId: restaurantId,
-                    name: name,
-                    size: size,
-                    price: price,
-                    info: info,
-                    type: type,
-                })
-            });
+        const response = await fetchWithAuth(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({ restaurantId, name, size, price, info, type })
+        });
 
-            if (response.ok) {
-                alert('Dish or drink was added successfully!');
-                await fetchMenu();
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Dish or drink was added successfully!');
+            await fetchMenu();
         }
     };
 
-    filterButton.addEventListener('click', async function() {
+    filterButton.addEventListener('click', async () => {
         const filter = getSelectedFilter();
         const restaurantId = await fetchStaff();
         if (restaurantId) {
@@ -317,19 +240,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    menuTableBody.addEventListener('click', function(event) {
+    menuTableBody.addEventListener('click', (event) => {
         const target = event.target;
+        const menuId = target.dataset.menuid;
+
         if (target.classList.contains('btn-edit')) {
-            const menuId = target.dataset.menuid;
             handleEdit(menuId);
         } else if (target.classList.contains('btn-delete')) {
-            const menuId = target.dataset.menuid;
             handleDelete(menuId);
         } else if (target.classList.contains('btn-save')) {
-            const menuId = target.dataset.menuid;
             handleSave(menuId);
         } else if (target.classList.contains('btn-cancel')) {
-            const menuId = target.dataset.menuid;
             handleCancel(menuId);
         }
     });

@@ -1,95 +1,83 @@
 document.addEventListener("DOMContentLoaded", function() {
-  var ordersPage = document.getElementById("orders");
-  var bookingsPage = document.getElementById("bookings");
-  var tablesPage = document.getElementById("tables");
-  var staffPage = document.getElementById("staff");
-  var schedulePage = document.getElementById("schedule");
-  var productsPage = document.getElementById("products");
-  var restaurantPage = document.getElementById("restaurant");
-  var menuPage = document.getElementById("menu");
-  var databasePage = document.getElementById("database");
-  var logoutPage = document.getElementById("logout");
+  const ordersPage = document.getElementById("orders");
+  const bookingsPage = document.getElementById("bookings");
+  const tablesPage = document.getElementById("tables");
+  const staffPage = document.getElementById("staff");
+  const schedulePage = document.getElementById("schedule");
+  const productsPage = document.getElementById("products");
+  const restaurantPage = document.getElementById("restaurant");
+  const menuPage = document.getElementById("menu");
+  const profilePage = document.getElementById("profile");
+  const databasePage = document.getElementById("database");
+  const logoutPage = document.getElementById("logout");
 
-  const getToken = () => localStorage.getItem('token');
+  const role = getUserRole();
+  console.log('User Role:', role);
 
-    const getUserData = () => {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (!userData || !userData.nameid) {
-            console.error('Error: User data not found in localStorage');
-            return null;
-        }
-        return userData;
-    };
+  const basePath = window.location.pathname.split('/').slice(0, -2).join('/');
 
-    const fetchStaffPosition = async () => {
-        const userData = getUserData();
-        if (!userData) return null;
+  function navigateTo(page) {
+    console.log("ROLE", role);
+    const subdir = role === 'admin' ? 'admin' : 'staff';
+    console.log("SUBDIRE",subdir);
+    window.location.href = `${basePath}/${subdir}/${page}`;
+  }
 
-        const token = getToken();
-        if (!token) {
-            console.error('Error: Token not found in localStorage');
-            return null;
-        }
-
-        try {
-            const response = await fetch(`https://localhost:7206/api/staff/${userData.nameid}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const staffData = await response.json();
-                return staffData.position;
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-            return null;
-        }
-    };
-
-  ordersPage.addEventListener("click", function() {
-    window.location.href = "OrdersPage.html";
-  });
-
-  bookingsPage.addEventListener("click", function() {
-    window.location.href = "BookingsPage.html";
-  });
-
-  tablesPage.addEventListener("click", function() {
-    window.location.href = "TablesPage.html";
-  });
-
-  staffPage.addEventListener("click", function() {
-    window.location.href = "StaffPage.html";
-  });
-
-  schedulePage.addEventListener("click", function() {
-    window.location.href = "SchedulePage.html";
-  });
-
-  productsPage.addEventListener("click", function() {
-    window.location.href = "ProductsPage.html";
-  });
-
-  restaurantPage.addEventListener("click", function() {
-    window.location.href = "RestaurantPage.html";
-  });
-
-  menuPage.addEventListener("click", function() {
-    window.location.href = "MenuPage.html";
-  });
-
-  databasePage.addEventListener("click", function() {
-    window.location.href = "DataPage.html";
-  });
+  if (role === 'admin') {
+    ordersPage.addEventListener("click", () => navigateTo("OrdersPage.html"));
+    bookingsPage.addEventListener("click", () => navigateTo("BookingsPage.html"));
+    tablesPage.addEventListener("click", () => navigateTo("TablesPage.html"));
+    staffPage.addEventListener("click", () => navigateTo("StaffPage.html"));
+    schedulePage.addEventListener("click", () => navigateTo("SchedulePage.html"));
+    productsPage.addEventListener("click", () => navigateTo("ProductsPage.html"));
+    restaurantPage.addEventListener("click", () => navigateTo("RestaurantPage.html"));
+    menuPage.addEventListener("click", () => navigateTo("MenuPage.html"));
+    databasePage.addEventListener("click", () => navigateTo("DataPage.html"));
+  } else if (role === 'worker') {
+    ordersPage.addEventListener("click", () => navigateTo("OrdersPage.html"));
+    menuPage.addEventListener("click", () => navigateTo("MenuPage.html"));
+    profilePage.addEventListener("click", () => navigateTo("ProfilePage.html"));
+    schedulePage.addEventListener("click", () => navigateTo("SchedulePage.html"));
+    tablesPage.addEventListener("click", () => navigateTo("TablesPage.html"));
+  } else {
+    console.log("ROLE", role);
+    console.error('Unauthorized access');
+  }
 
   logoutPage.addEventListener("click", function() {
-    window.location.href = "LoginPage.html";
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    window.location.href = `${basePath}/LoginPage.html`;
   });
 });
+
+const getToken = () => {
+  const token = localStorage.getItem('token');
+  console.log('Token:', token);
+  return token;
+};
+
+const parseJwt = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error('Error parsing token:', e);
+    return null;
+  }
+};
+
+const getUserRole = () => {
+  const token = getToken();
+  if (!token) {
+    console.error('Error: Token not found in localStorage');
+    return null;
+  }
+  const decodedToken = parseJwt(token);
+  console.log('Decoded Token:', decodedToken);
+  return decodedToken ? decodedToken.role : null;
+};
