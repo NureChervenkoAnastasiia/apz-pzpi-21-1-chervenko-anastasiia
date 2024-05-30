@@ -8,12 +8,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const getToken = () => localStorage.getItem('token');
 
     const getUserData = () => {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (!userData || !userData.nameid) {
-            console.error('Error: User data not found in localStorage');
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            if (!userData || !userData.nameid) {
+                throw new Error('User data not found or invalid in localStorage');
+            }
+            return userData;
+        } catch (error) {
+            console.error('Error:', error.message);
             return null;
         }
-        return userData;
     };
 
     const fetchWithAuth = async (url, options = {}) => {
@@ -48,14 +52,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!userData) return null;
 
         const staffData = await fetchWithAuth(`https://localhost:7206/api/staff/${userData.nameid}`);
-        console.log('Staff Data:', staffData);
-        return staffData ? staffData.restaurantId : null;
+        if (staffData && staffData.restaurantId) {
+            return staffData.restaurantId;
+        } else {
+            console.error('Error: Invalid staff data received');
+            return null;
+        }
     };
 
     const fetchMenu = async (endpoint) => {
-        console.log('Fetching menu from endpoint:', endpoint);
         const data = await fetchWithAuth(endpoint);
-        console.log('Menu Data:', data);
         if (data) {
             displayMenu(data);
         } else {
@@ -86,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    const getSelectedFilter = () => document.querySelector('input[name="filter"]:checked').value;
+    const getSelectedFilter = () => document.querySelector('input[name="filter"]:checked')?.value || 'default';
 
     const getEndpoint = (filter, restaurantId) => {
         const endpoints = {
@@ -110,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const restaurantId = await fetchStaff();
     if (restaurantId) {
-        await fetchMenu(getEndpoint('menu', restaurantId));
+        await fetchMenu(getEndpoint('default', restaurantId));
     } else {
         console.error('Error: Could not fetch restaurant ID');
     }

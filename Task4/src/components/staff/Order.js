@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const tablesApiUrl = 'https://localhost:7206/api/Table/';
     const ordersTableBody = document.querySelector('#orders-table tbody');
     const addButton = document.querySelector('.btn-add');
+    const inputTable = document.getElementById('input-table');
+    const inputStatus = document.getElementById('input-status');
 
     const getToken = () => localStorage.getItem('token');
 
@@ -15,14 +17,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
 
-            if (response.ok) {
-                const orders = await response.json();
-                displayOrders(orders);
-            } else {
-                console.error('Error:', await response.text());
+            if (!response.ok) {
+                throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}`);
             }
+
+            const orders = await response.json();
+            displayOrders(orders);
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('Error fetching orders:', error.message);
         }
     };
 
@@ -35,26 +37,24 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
 
-            if (response.ok) {
-                const tables = await response.json();
-                populateTablesDropdown(tables);
-            } else {
-                console.error('Error:', await response.text());
+            if (!response.ok) {
+                throw new Error(`Failed to fetch tables: ${response.status} ${response.statusText}`);
             }
+
+            const tables = await response.json();
+            populateTablesDropdown(tables);
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('Error fetching tables:', error.message);
         }
     };
 
     const populateTablesDropdown = (tables) => {
-        const tableDropdown = document.getElementById('input-table');
-        tableDropdown.innerHTML = '';
-
+        inputTable.innerHTML = '';
         tables.forEach(table => {
             const option = document.createElement('option');
             option.value = table.id;
             option.textContent = table.number;
-            tableDropdown.appendChild(option);
+            inputTable.appendChild(option);
         });
     };
 
@@ -66,16 +66,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Content-Type': 'application/json'
                 }
             });
-    
-            if (response.ok) {
-                const table = await response.json();
-                return table.number;
-            } else {
-                console.error('Error:', await response.text());
-                return null;
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch table: ${response.status} ${response.statusText}`);
             }
+
+            const table = await response.json();
+            return table.number;
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('Error fetching table number:', error.message);
             return null;
         }
     };
@@ -106,8 +105,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const formatDateTime = (dateTime) => {
         const date = new Date(dateTime);
-        const formattedDate = date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const formattedTime = date.toLocaleTimeString('en-GB'); // HH:MM:SS format
+        const formattedDate = date.toLocaleDateString('en-CA');
+        const formattedTime = date.toLocaleTimeString('en-GB');
         return `Дата: ${formattedDate}<br>Час: ${formattedTime}`;
     };
 
@@ -122,11 +121,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const status = statusCell.textContent;
 
         numberCell.innerHTML = `<input type="number" value="${number}">`;
-        tableCell.innerHTML = `<select>${document.getElementById('input-table').innerHTML}</select>`;
+        tableCell.innerHTML = `<select>${inputTable.innerHTML}</select>`;
         tableCell.querySelector('select').value = tableNumber;
         dateTimeCell.innerHTML = `<input type="datetime-local" value="${dateTime}">`;
         commentCell.innerHTML = `<input type="text" value="${comment}">`;
-        statusCell.innerHTML = `<select>${document.getElementById('input-status').innerHTML}</select>`;
+        statusCell.innerHTML = `<select>${inputStatus.innerHTML}</select>`;
         statusCell.querySelector('select').value = status;
 
         editButtonCell.innerHTML = `<button class="btn-save" data-orderid="${orderId}">Save</button>`;
@@ -158,17 +157,17 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (response.ok) {
                 alert('Order was updated successfully!');
-                await fetchOrders(); // Refetch orders instead of reloading the page
+                await fetchOrders();
             } else {
-                console.error('Error:', await response.json());
+                console.error('Error saving order:', await response.json());
             }
         } catch (error) {
-            console.error('Error:', error.message);
+            console.error('Error saving order:', error.message);
         }
     };
 
     const handleCancel = (orderId) => {
-        fetchOrders(); // Simply refetch the orders to reset the table
+        fetchOrders();
     };
 
     ordersTableBody.addEventListener('click', function(event) {
@@ -184,6 +183,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    await fetchTables(); // Fetch tables first to populate the dropdown
-    await fetchOrders(); // Fetch orders next
+    await fetchTables();
+    await fetchOrders();
 });

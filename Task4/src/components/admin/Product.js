@@ -1,110 +1,63 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     const apiUrl = 'https://localhost:7206/api/Product/';
     const sortButton = document.getElementById('sort-button');
-    const productsTableBody = document.querySelector('#tables-table tbody'); // Corrected ID
+    const productsTableBody = document.querySelector('#tables-table tbody');
     const addButton = document.querySelector('.btn-add');
-
-    const getToken = () => localStorage.getItem('token');
-
+    const token = localStorage.getItem('token');
     let products = [];
 
-    const fetchProducts = async () => {
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+
+    const fetchData = async (url, options = {}) => {
         try {
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                products = await response.json();
-
-                if (!Array.isArray(products)) {
-                    console.error('Fetched products is not an array:', products);
-                    products = [];
-                }
-
-                displayProducts(products);
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-            }
+            const response = await fetch(url, { headers, ...options });
+            if (response.ok) return response.json();
+            console.error('Error:', await response.text());
         } catch (error) {
             console.error('Error:', error.message);
         }
     };
 
-    const displayProducts = (products) => {
-        productsTableBody.innerHTML = '';
+    const fetchProducts = async () => {
+        products = await fetchData(apiUrl) || [];
+        displayProducts(products);
+    };
 
-        products.forEach(product => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
+    const displayProducts = (products) => {
+        productsTableBody.innerHTML = products.map(product => `
+            <tr>
                 <td>${product.name}</td>
                 <td>${product.amount}</td>
                 <td><button class="btn-edit" data-productid="${product.id}">Edit</button></td>
                 <td><button class="btn-delete" data-productid="${product.id}">Delete</button></td>
-            `;
-            productsTableBody.appendChild(row);
-        });
+            </tr>
+        `).join('');
     };
 
     const handleDelete = async (productId) => {
-        if (!productId) {
-            console.error('Error: Product ID is undefined');
-            return;
-        }
-
-        try {
-            const token = getToken();
-            const response = await fetch(`${apiUrl}${productId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                alert('Product was deleted successfully!');
-                await fetchProducts(); // Refetch products instead of reloading the page
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchData(`${apiUrl}${productId}`, { method: 'DELETE' });
+        if (response) {
+            alert('Product was deleted successfully!');
+            fetchProducts();
         }
     };
 
     const handleEdit = (productId) => {
-        if (!productId) {
-            console.error('Error: Product ID is undefined');
-            return;
-        }
+        const row = document.querySelector(`button[data-productid="${productId}"]`).closest('tr');
+        const [nameCell, amountCell] = row.cells;
 
-        const row = document.querySelector(`button[data-productid="${productId}"]`).parentNode.parentNode;
-        const [nameCell, amountCell, editButtonCell, deleteButtonCell] = row.cells;
+        nameCell.innerHTML = `<input type="text" value="${nameCell.textContent}">`;
+        amountCell.innerHTML = `<input type="number" value="${amountCell.textContent}">`;
 
-        const name = nameCell.textContent;
-        const amount = amountCell.textContent;
-
-        nameCell.innerHTML = `<input type="text" value="${name}">`;
-        amountCell.innerHTML = `<input type="number" value="${amount}">`;
-
-        editButtonCell.innerHTML = `<button class="btn-save" data-productid="${productId}">Save</button>`;
-        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-productid="${productId}">Cancel</button>`;
+        row.cells[2].innerHTML = `<button class="btn-save" data-productid="${productId}">Save</button>`;
+        row.cells[3].innerHTML = `<button class="btn-cancel" data-productid="${productId}">Cancel</button>`;
     };
 
     const handleSave = async (productId) => {
-        if (!productId) {
-            console.error('Error: Product ID is undefined');
-            return;
-        }
-
-        const row = document.querySelector(`button[data-productid="${productId}"]`).parentNode.parentNode;
-        const token = getToken();
+        const row = document.querySelector(`button[data-productid="${productId}"]`).closest('tr');
         const name = row.cells[0].querySelector('input').value;
         const amount = row.cells[1].querySelector('input').value;
 
@@ -113,132 +66,75 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(`${apiUrl}${productId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: name,
-                    amount: amount,
-                })
-            });
+        const response = await fetchData(`${apiUrl}${productId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ name, amount })
+        });
 
-            if (response.ok) {
-                alert('Product was updated successfully!');
-                await fetchProducts(); // Refetch products instead of reloading the page
-            } else {
-                const error = await response.json();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Product was updated successfully!');
+            fetchProducts();
         }
     };
 
-    const handleCancel = (productId) => {
-        if (!productId) {
-            console.error('Error: Product ID is undefined');
+    const handleCancel = () => fetchProducts();
+
+    const handleAdd = async () => {
+        const name = document.getElementById('input-name').value;
+        const amount = document.getElementById('input-amount').value;
+
+        if (!name || !amount) {
+            alert('Please fill in all fields');
             return;
         }
 
-        const row = document.querySelector(`button[data-productid="${productId}"]`).parentNode.parentNode;
-        const name = row.cells[0].querySelector('input').value;
-        const amount = row.cells[1].querySelector('input').value;
+        const response = await fetchData(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({ name, amount })
+        });
 
-        row.innerHTML = `
-            <td>${name}</td>
-            <td>${amount}</td>
-            <td><button class="btn-edit" data-productid="${productId}">Edit</button></td>
-            <td><button class="btn-delete" data-productid="${productId}">Delete</button></td>
-        `;
-    };
-
-    const handleAdd = async () => {
-        try {
-            const token = getToken();
-            const name = document.getElementById('input-name').value;
-            const amount = document.getElementById('input-amount').value;
-
-            if (!name || !amount) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: name,
-                    amount: amount,
-                })
-            });
-
-            if (response.ok) {
-                alert('Product was added successfully!');
-                await fetchProducts();
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Product was added successfully!');
+            fetchProducts();
         }
     };
 
-    // Event delegation for dynamic buttons
-    productsTableBody.addEventListener('click', function(event) {
+    productsTableBody.addEventListener('click', (event) => {
         const target = event.target;
         const productId = target.getAttribute('data-productid');
-        
-        if (target.classList.contains('btn-delete')) {
-            handleDelete(productId);
-        } else if (target.classList.contains('btn-edit')) {
-            handleEdit(productId);
-        } else if (target.classList.contains('btn-save')) {
-            handleSave(productId);
-        } else if (target.classList.contains('btn-cancel')) {
-            handleCancel(productId);
-        }
+
+        if (target.classList.contains('btn-delete')) handleDelete(productId);
+        else if (target.classList.contains('btn-edit')) handleEdit(productId);
+        else if (target.classList.contains('btn-save')) handleSave(productId);
+        else if (target.classList.contains('btn-cancel')) handleCancel(productId);
     });
 
-    // Add button event listener
     addButton.addEventListener('click', handleAdd);
 
     const sortProducts = (products, sortParam) => {
-        switch (sortParam) {
-            case 'name-asc':
-                return products.sort((a, b) => a.name.localeCompare(b.name));
-            case 'name-desc':
-                return products.sort((a, b) => b.name.localeCompare(a.name));
-            case 'amount-asc':
-                return products.sort((a, b) => a.amount - b.amount);
-            case 'amount-desc':
-                return products.sort((a, b) => b.amount - a.amount);
-            default:
-                return products;
-        }
+        return products.sort((a, b) => {
+            switch (sortParam) {
+                case 'name-asc':
+                    return a.name.localeCompare(b.name);
+                case 'name-desc':
+                    return b.name.localeCompare(a.name);
+                case 'amount-asc':
+                    return a.amount - b.amount;
+                case 'amount-desc':
+                    return b.amount - a.amount;
+                default:
+                    return 0;
+            }
+        });
     };
 
     const handleSort = () => {
-        const sortOptions = document.querySelectorAll('input[name="sort"]');
-        let selectedSort = '';
-        sortOptions.forEach(option => {
-            if (option.checked) {
-                selectedSort = option.value;
-            }
-        });
+        const selectedSort = document.querySelector('input[name="sort"]:checked').value;
         const sortedProducts = sortProducts(products, selectedSort);
         displayProducts(sortedProducts);
     };
 
     sortButton.addEventListener('click', handleSort);
 
-    // Fetch products initially
     await fetchProducts();
 });

@@ -1,83 +1,45 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     const apiUrl = 'https://localhost:7206/api/Order/';
     const tablesApiUrl = 'https://localhost:7206/api/Table/';
     const ordersTableBody = document.querySelector('#orders-table tbody');
     const addButton = document.querySelector('.btn-add');
+    const token = localStorage.getItem('token');
 
-    const getToken = () => localStorage.getItem('token');
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
 
-    const fetchOrders = async () => {
+    const fetchData = async (url, options = {}) => {
         try {
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const orders = await response.json();
-                displayOrders(orders);
-            } else {
-                console.error('Error:', await response.text());
-            }
+            const response = await fetch(url, { headers, ...options });
+            if (response.ok) return response.json();
+            console.error('Error:', await response.text());
         } catch (error) {
             console.error('Error:', error.message);
         }
     };
 
-    const fetchTables = async () => {
-        try {
-            const response = await fetch(tablesApiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    const fetchOrders = async () => {
+        const orders = await fetchData(apiUrl);
+        if (orders) displayOrders(orders);
+    };
 
-            if (response.ok) {
-                const tables = await response.json();
-                populateTablesDropdown(tables);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
+    const fetchTables = async () => {
+        const tables = await fetchData(tablesApiUrl);
+        if (tables) populateTablesDropdown(tables);
     };
 
     const populateTablesDropdown = (tables) => {
         const tableDropdown = document.getElementById('input-table');
-        tableDropdown.innerHTML = '';
-
-        tables.forEach(table => {
-            const option = document.createElement('option');
-            option.value = table.id;
-            option.textContent = table.number;
-            tableDropdown.appendChild(option);
-        });
+        tableDropdown.innerHTML = tables.map(table => 
+            `<option value="${table.id}">${table.number}</option>`
+        ).join('');
     };
 
     const getTableNumberById = async (tableId) => {
-        try {
-            const response = await fetch(`${tablesApiUrl}${tableId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-    
-            if (response.ok) {
-                const table = await response.json();
-                return table.number;
-            } else {
-                console.error('Error:', await response.text());
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-            return null;
-        }
+        const table = await fetchData(`${tablesApiUrl}${tableId}`);
+        return table ? table.number : null;
     };
 
     const displayOrders = async (orders) => {
@@ -90,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
 
             const formattedDateTime = formatDateTime(order.orderDateTime);
-
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${order.number}</td>
@@ -113,29 +74,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     const handleDelete = async (orderId) => {
-        try {
-            const response = await fetch(`${apiUrl}${orderId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                alert('Order was deleted successfully!');
-                await fetchOrders(); 
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchData(`${apiUrl}${orderId}`, { method: 'DELETE' });
+        if (response) {
+            alert('Order was deleted successfully!');
+            fetchOrders();
         }
     };
 
     const handleEdit = (orderId) => {
-        const row = document.querySelector(`button[data-orderid="${orderId}"]`).parentNode.parentNode;
-        const [numberCell, tableCell, dateTimeCell, commentCell, statusCell, editButtonCell, deleteButtonCell] = row.cells;
+        const row = document.querySelector(`button[data-orderid="${orderId}"]`).closest('tr');
+        const cells = row.cells;
+        const [numberCell, tableCell, dateTimeCell, commentCell, statusCell] = cells;
 
         const number = numberCell.textContent;
         const tableNumber = tableCell.textContent;
@@ -151,47 +100,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         statusCell.innerHTML = `<select>${document.getElementById('input-status').innerHTML}</select>`;
         statusCell.querySelector('select').value = status;
 
-        editButtonCell.innerHTML = `<button class="btn-save" data-orderid="${orderId}">Save</button>`;
-        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-orderid="${orderId}">Cancel</button>`;
+        cells[5].innerHTML = `<button class="btn-save" data-orderid="${orderId}">Save</button>`;
+        cells[6].innerHTML = `<button class="btn-cancel" data-orderid="${orderId}">Cancel</button>`;
     };
 
     const handleSave = async (orderId) => {
-        const row = document.querySelector(`button[data-orderid="${orderId}"]`).parentNode.parentNode;
-        const number = row.cells[0].querySelector('input').value;
-        const tableId = row.cells[1].querySelector('select').value;
-        const orderDateTime = row.cells[2].querySelector('input').value;
-        const comment = row.cells[3].querySelector('input').value;
-        const status = row.cells[4].querySelector('select').value;
+        const row = document.querySelector(`button[data-orderid="${orderId}"]`).closest('tr');
+        const cells = row.cells;
+        const number = cells[0].querySelector('input').value;
+        const tableId = cells[1].querySelector('select').value;
+        const orderDateTime = cells[2].querySelector('input').value;
+        const comment = cells[3].querySelector('input').value;
+        const status = cells[4].querySelector('select').value;
 
         if (!number || !tableId || !orderDateTime || !status) {
             alert('Please fill in all fields');
             return;
         }
 
-        try {
-            const response = await fetch(`${apiUrl}${orderId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ number, tableId, orderDateTime, comment, status })
-            });
+        const response = await fetchData(`${apiUrl}${orderId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ number, tableId, orderDateTime, comment, status })
+        });
 
-            if (response.ok) {
-                alert('Order was updated successfully!');
-                await fetchOrders(); // Refetch orders instead of reloading the page
-            } else {
-                console.error('Error:', await response.json());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Order was updated successfully!');
+            fetchOrders();
         }
     };
 
-    const handleCancel = (orderId) => {
-        fetchOrders(); // Simply refetch the orders to reset the table
-    };
+    const handleCancel = () => fetchOrders();
 
     const handleAdd = async () => {
         const number = document.getElementById('input-number').value;
@@ -205,44 +143,29 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ number, tableId, orderDateTime, comment, status })
-            });
+        const response = await fetchData(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({ number, tableId, orderDateTime, comment, status })
+        });
 
-            if (response.ok) {
-                alert('Order was added successfully!');
-                await fetchOrders(); // Refetch orders instead of reloading the page
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Order was added successfully!');
+            fetchOrders();
         }
     };
 
-    ordersTableBody.addEventListener('click', function(event) {
+    ordersTableBody.addEventListener('click', (event) => {
         const target = event.target;
         const orderId = target.getAttribute('data-orderid');
 
-        if (target.classList.contains('btn-delete')) {
-            handleDelete(orderId);
-        } else if (target.classList.contains('btn-edit')) {
-            handleEdit(orderId);
-        } else if (target.classList.contains('btn-save')) {
-            handleSave(orderId);
-        } else if (target.classList.contains('btn-cancel')) {
-            handleCancel(orderId);
-        }
+        if (target.classList.contains('btn-delete')) handleDelete(orderId);
+        else if (target.classList.contains('btn-edit')) handleEdit(orderId);
+        else if (target.classList.contains('btn-save')) handleSave(orderId);
+        else if (target.classList.contains('btn-cancel')) handleCancel(orderId);
     });
 
     addButton.addEventListener('click', handleAdd);
 
-    await fetchTables(); // Fetch tables first to populate the dropdown
-    await fetchOrders(); // Fetch orders next
+    await fetchTables();
+    await fetchOrders();
 });

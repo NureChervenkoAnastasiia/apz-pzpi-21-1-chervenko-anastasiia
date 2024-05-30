@@ -17,9 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const basePath = window.location.pathname.split('/').slice(0, -2).join('/');
 
   function navigateTo(page) {
-    console.log("ROLE", role);
     const subdir = role === 'admin' ? 'admin' : 'staff';
-    console.log("SUBDIRE",subdir);
     window.location.href = `${basePath}/${subdir}/${page}`;
   }
 
@@ -40,7 +38,6 @@ document.addEventListener("DOMContentLoaded", function() {
     schedulePage.addEventListener("click", () => navigateTo("SchedulePage.html"));
     tablesPage.addEventListener("click", () => navigateTo("TablesPage.html"));
   } else {
-    console.log("ROLE", role);
     console.error('Unauthorized access');
   }
 
@@ -53,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 const getToken = () => {
   const token = localStorage.getItem('token');
-  console.log('Token:', token);
   return token;
 };
 
@@ -78,6 +74,5 @@ const getUserRole = () => {
     return null;
   }
   const decodedToken = parseJwt(token);
-  console.log('Decoded Token:', decodedToken);
   return decodedToken ? decodedToken.role : null;
 };

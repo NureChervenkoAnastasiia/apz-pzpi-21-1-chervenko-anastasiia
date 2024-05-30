@@ -8,59 +8,49 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const getToken = () => localStorage.getItem('token');
 
-    const decodeToken = (token) => {
+    const fetchWithAuth = async (url, options = {}) => {
+        const token = getToken();
+        if (!token) {
+            console.error('Error: Token not found in localStorage');
+            return null;
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers,
+        };
+
         try {
-            return jwt_decode(token);
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('Error:', error);
+                return null;
+            }
+            return await response.json();
         } catch (error) {
-            console.error('Error decoding token:', error);
+            console.error('Error:', error.message);
             return null;
         }
     };
 
     const fetchSchedules = async (staffId) => {
-        try {
-            const response = await fetch(`${apiUrl}${staffId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const schedules = await response.json();
-                console.log('Fetched schedules:', schedules);
-
-                if (Array.isArray(schedules)) {
-                    displaySchedules(schedules);
-                } else {
-                    console.error('Error: Received data is not an array');
-                }
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const schedules = await fetchWithAuth(`${apiUrl}${staffId}`);
+        if (schedules && Array.isArray(schedules)) {
+            displaySchedules(schedules);
+        } else {
+            console.error('Error: Failed to fetch schedules');
         }
     };
 
     const fetchStaff = async (staffId) => {
-        try {
-            const response = await fetch(`${staffApiUrl}${staffId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const staff = await response.json();
-                populateStaffDropdown(staff);
-                currentStaffName = staff.name;
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const staff = await fetchWithAuth(`${staffApiUrl}${staffId}`);
+        if (staff) {
+            populateStaffDropdown(staff);
+            currentStaffName = staff.name;
+        } else {
+            console.error('Error: Failed to fetch staff');
         }
     };
 
@@ -106,21 +96,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         try {
-            const response = await fetch(apiUrl, {
+            await fetchWithAuth(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ staffId, startDateTime, finishDateTime })
             });
 
-            if (response.ok) {
-                alert('Schedule was added successfully!');
-                await fetchSchedules(staffId);
-            } else {
-                console.error('Error:', await response.text());
-            }
+            alert('Schedule was added successfully!');
+            await fetchSchedules(staffId);
         } catch (error) {
             console.error('Error:', error.message);
         }

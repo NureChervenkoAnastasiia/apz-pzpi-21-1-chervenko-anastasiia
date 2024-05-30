@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const apiUrl = 'https://localhost:7206/api/Table/';
-    const sortButton = document.getElementById('sort-button');
     const tablesTableBody = document.querySelector('#tables-table tbody');
-    const addButton = document.querySelector('.btn-add');
 
     const getToken = () => localStorage.getItem('token');
 
@@ -15,19 +13,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             });
 
-            if (response.ok) {
-                let tables = await response.json();
-
-                if (!Array.isArray(tables)) {
-                    console.error('Fetched tables is not an array:', tables);
-                    tables = [];
-                }
-
-                displayTables(tables);
-            } else {
+            if (!response.ok) {
                 const error = await response.text();
-                console.error('Error:', error);
+                throw new Error(error);
             }
+
+            const tables = await response.json();
+            if (!Array.isArray(tables)) {
+                throw new Error('Fetched tables is not an array');
+            }
+
+            displayTables(tables);
         } catch (error) {
             console.error('Error:', error.message);
         }
@@ -42,38 +38,28 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <td>${table.number}</td>
                 <td>${table.status}</td>
                 <td><button class="btn-edit" data-tableid="${table.id}">Edit</button></td>
+                <td><button class="btn-delete" data-tableid="${table.id}">Delete</button></td>
             `;
             tablesTableBody.appendChild(row);
         });
     };
-    
+
     const handleEdit = (tableId) => {
-        if (!tableId) {
-            console.error('Error: Table ID is undefined');
-            return;
-        }
-    
         const row = document.querySelector(`button[data-tableid="${tableId}"]`).parentNode.parentNode;
         const [numberCell, statusCell, editButtonCell, deleteButtonCell] = row.cells;
-    
+
         const number = numberCell.textContent;
         const status = statusCell.textContent;
-    
+
         numberCell.innerHTML = `<input type="text" value="${number}">`;
-        statusCell.innerHTML = `<input type="text" value="${status}">`;     
-    
+        statusCell.innerHTML = `<input type="text" value="${status}">`;
+
         editButtonCell.innerHTML = `<button class="btn-save" data-tableid="${tableId}">Save</button>`;
         deleteButtonCell.innerHTML = `<button class="btn-cancel" data-tableid="${tableId}">Cancel</button>`;
     };
 
     const handleSave = async (tableId) => {
-        if (!tableId) {
-            console.error('Error: Table ID is undefined');
-            return;
-        }
-
         const row = document.querySelector(`button[data-tableid="${tableId}"]`).parentNode.parentNode;
-        const token = getToken();
         const number = row.cells[0].querySelector('input').value;
         const status = row.cells[1].querySelector('input').value;
 
@@ -86,58 +72,77 @@ document.addEventListener('DOMContentLoaded', async function() {
             const response = await fetch(`${apiUrl}${tableId}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${getToken()}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    number: number,
-                    status: status,
-                })
+                body: JSON.stringify({ number, status })
             });
 
-            if (response.ok) {
-                alert('Table was updated successfully!');
-                await fetchTables();
-            } else {
+            if (!response.ok) {
                 const error = await response.json();
-                console.error('Error:', error);
+                throw new Error(error);
             }
+
+            alert('Table was updated successfully!');
+            await fetchTables();
         } catch (error) {
             console.error('Error:', error.message);
         }
     };
 
     const handleCancel = (tableId) => {
-        if (!tableId) {
-            console.error('Error: Table ID is undefined');
-            return;
-        }
-    
         const row = document.querySelector(`button[data-tableid="${tableId}"]`).parentNode.parentNode;
         const number = row.cells[0].querySelector('input').value;
         const status = row.cells[1].querySelector('input').value;
-    
+
         row.innerHTML = `
             <td>${number}</td>
             <td>${status}</td>
             <td><button class="btn-edit" data-tableid="${tableId}">Edit</button></td>
+            <td><button class="btn-delete" data-tableid="${tableId}">Delete</button></td>
         `;
     };
 
-    // Event delegation for dynamic buttons
+    const handleDelete = async (tableId) => {
+        if (!confirm('Are you sure you want to delete this table?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${apiUrl}${tableId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error);
+            }
+
+            alert('Table was deleted successfully!');
+            await fetchTables();
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+    };
+
     tablesTableBody.addEventListener('click', function(event) {
         const target = event.target;
         const tableId = target.getAttribute('data-tableid');
-        
+
         if (target.classList.contains('btn-edit')) {
             handleEdit(tableId);
         } else if (target.classList.contains('btn-save')) {
             handleSave(tableId);
         } else if (target.classList.contains('btn-cancel')) {
             handleCancel(tableId);
+        } else if (target.classList.contains('btn-delete')) {
+            handleDelete(tableId);
         }
     });
 
-    // Fetch tables initially
     await fetchTables();
 });

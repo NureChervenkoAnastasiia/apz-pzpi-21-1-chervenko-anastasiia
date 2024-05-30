@@ -1,21 +1,36 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     const apiUrl = 'https://localhost:7206/api/Restaurants/';
     const restaurantContainer = document.querySelector('.restaurant-container');
 
     const getToken = () => localStorage.getItem('token');
 
     const getUserData = () => {
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        if (!userData || !userData.nameid) {
-            console.error('Error: User data not found in localStorage');
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            return userData?.nameid ? userData : null;
+        } catch (error) {
+            console.error('Error parsing user data:', error);
             return null;
         }
-        return userData;
+    };
+
+    const fetchData = async (url, headers) => {
+        try {
+            const response = await fetch(url, { headers });
+            if (response.ok) return response.json();
+            console.error('Error:', await response.text());
+        } catch (error) {
+            console.error('Error:', error.message);
+        }
+        return null;
     };
 
     const fetchRestaurantId = async () => {
         const userData = getUserData();
-        if (!userData) return null;
+        if (!userData) {
+            console.error('Error: User data not found in localStorage');
+            return null;
+        }
 
         const token = getToken();
         if (!token) {
@@ -23,26 +38,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             return null;
         }
 
-        try {
-            const response = await fetch(`https://localhost:7206/api/staff/${userData.nameid}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        const url = `https://localhost:7206/api/staff/${userData.nameid}`;
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
 
-            if (response.ok) {
-                const staffData = await response.json();
-                return staffData.restaurantId;
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-            return null;
-        }
+        const staffData = await fetchData(url, headers);
+        return staffData ? staffData.restaurantId : null;
     };
 
     const fetchRestaurantInfo = async (restaurantId) => {
@@ -52,24 +55,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(`${apiUrl}${restaurantId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        const url = `${apiUrl}${restaurantId}`;
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
 
-            if (response.ok) {
-                const restaurantData = await response.json();
-                displayRestaurantInfo(restaurantData);
-            } else {
-                const error = await response.text();
-                console.error('Error:', error);
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
+        const restaurantData = await fetchData(url, headers);
+        if (restaurantData) displayRestaurantInfo(restaurantData);
     };
 
     const displayRestaurantInfo = (restaurant) => {

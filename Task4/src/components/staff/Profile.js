@@ -38,9 +38,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 displayStaffInfo(staffData);
                 return staffData;
             } else {
-                const error = await response.text();
-                console.error('Error:', error);
-                return null;
+                throw new Error(`Failed to fetch staff info: ${response.status} ${response.statusText}`);
             }
         } catch (error) {
             console.error('Error:', error.message);
@@ -50,12 +48,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const displayStaffInfo = (staff) => {
         staffInfoContainer.innerHTML = `
-            <p><strong>Name:</strong> <span id="staff-name">${staff.name}</span></p>
-            <p><strong>Position:</strong> <span id="staff-position">${staff.position}</span></p>
-            <p><strong>Hourly Salary:</strong> <span id="staff-salary">${staff.hourlySalary}</span></p>
-            <p><strong>Phone:</strong> <span id="staff-phone">${staff.phone}</span></p>
-            <p><strong>Attendance Card:</strong> <span id="staff-card">${staff.attendanceCard}</span></p>
-            <p><strong>Login:</strong> <span id="staff-login">${staff.login}</span></p>
+            <p><strong>Name:</strong> ${staff.name}</p>
+            <p><strong>Position:</strong> ${staff.position}</p>
+            <p><strong>Hourly Salary:</strong> ${staff.hourlySalary}</p>
+            <p><strong>Phone:</strong> ${staff.phone}</p>
+            <p><strong>Attendance Card:</strong> ${staff.attendanceCard}</p>
+            <p><strong>Login:</strong> ${staff.login}</p>
         `;
     };
 
@@ -111,8 +109,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 saveButton.style.display = 'none';
                 alert('Information updated successfully!');
             } else {
-                const error = await response.text();
-                console.error('Error:', error);
+                throw new Error(`Failed to update staff info: ${response.status} ${response.statusText}`);
             }
         } catch (error) {
             console.error('Error:', error.message);

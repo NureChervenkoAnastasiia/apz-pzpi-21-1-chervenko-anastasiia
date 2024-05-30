@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     const apiUrl = 'https://localhost:7206/api/Schedule/';
     const staffApiUrl = 'https://localhost:7206/api/Staff/';
     const scheduleTableBody = document.querySelector('#schedule tbody');
@@ -6,56 +6,37 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const getToken = () => localStorage.getItem('token');
 
-    const fetchSchedules = async () => {
+    const fetchData = async (url, options = {}) => {
         try {
-            const response = await fetch(apiUrl, {
+            const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
             });
-
-            if (response.ok) {
-                const schedules = await response.json();
-                displaySchedules(schedules);
-            } else {
-                console.error('Error:', await response.text());
-            }
+            if (response.ok) return response.json();
+            console.error('Error:', await response.text());
         } catch (error) {
             console.error('Error:', error.message);
         }
+        return null;
+    };
+
+    const fetchSchedules = async () => {
+        const schedules = await fetchData(apiUrl);
+        if (schedules) displaySchedules(schedules);
     };
 
     const fetchStaff = async () => {
-        try {
-            const response = await fetch(staffApiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const staff = await response.json();
-                populateStaffDropdown(staff);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
+        const staff = await fetchData(staffApiUrl);
+        if (staff) populateStaffDropdown(staff);
     };
 
     const populateStaffDropdown = (staff) => {
         const staffDropdown = document.getElementById('input-staff');
-        staffDropdown.innerHTML = '';
-
-        staff.forEach(member => {
-            const option = document.createElement('option');
-            option.value = member.id;
-            option.textContent = member.name;
-            staffDropdown.appendChild(option);
-        });
+        staffDropdown.innerHTML = staff.map(member => `<option value="${member.id}">${member.name}</option>`).join('');
     };
 
     const displaySchedules = async (schedules) => {
@@ -66,7 +47,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.error(`Staff member not found for schedule with ID ${schedule.id}`);
                 continue;
             }
-
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${staffName}</td>
@@ -80,25 +60,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     const getStaffNameById = async (staffId) => {
-        try {
-            const response = await fetch(`${staffApiUrl}${staffId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const staff = await response.json();
-                return staff.name;
-            } else {
-                console.error('Error:', await response.text());
-                return null;
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-            return null;
-        }
+        const staff = await fetchData(`${staffApiUrl}${staffId}`);
+        return staff ? staff.name : null;
     };
 
     const formatDateTime = (dateTime) => {
@@ -109,23 +72,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     const handleDelete = async (scheduleId) => {
-        try {
-            const response = await fetch(`${apiUrl}${scheduleId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                alert('Schedule was deleted successfully!');
-                await fetchSchedules();
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchData(`${apiUrl}${scheduleId}`, { method: 'DELETE' });
+        if (response !== null) {
+            alert('Schedule was deleted successfully!');
+            await fetchSchedules();
         }
     };
 
@@ -157,30 +107,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(`${apiUrl}${scheduleId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ staffId, startDateTime, finishDateTime })
-            });
-
-            if (response.ok) {
-                alert('Schedule was updated successfully!');
-                await fetchSchedules();
-            } else {
-                console.error('Error:', await response.json());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchData(`${apiUrl}${scheduleId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ staffId, startDateTime, finishDateTime })
+        });
+        if (response !== null) {
+            alert('Schedule was updated successfully!');
+            await fetchSchedules();
         }
     };
 
-    const handleCancel = (scheduleId) => {
-        fetchSchedules();
-    };
+    const handleCancel = () => fetchSchedules();
 
     const handleAdd = async () => {
         const staffId = document.getElementById('input-staff').value;
@@ -192,28 +129,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ staffId, startDateTime, finishDateTime })
-            });
-
-            if (response.ok) {
-                alert('Schedule was added successfully!');
-                await fetchSchedules();
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchData(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({ staffId, startDateTime, finishDateTime })
+        });
+        if (response !== null) {
+            alert('Schedule was added successfully!');
+            await fetchSchedules();
         }
     };
 
-    scheduleTableBody.addEventListener('click', function(event) {
+    scheduleTableBody.addEventListener('click', (event) => {
         const target = event.target;
         const scheduleId = target.getAttribute('data-scheduleid');
 

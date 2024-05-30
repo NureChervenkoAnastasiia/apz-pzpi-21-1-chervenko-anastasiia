@@ -1,7 +1,8 @@
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     const apiUrl = 'https://localhost:7206/api/Staff/';
     const restaurantsApiUrl = 'https://localhost:7206/api/Restaurants/';
     const workingHoursApiUrl = 'https://localhost:7206/api/Staff/weekly-working-hours';
+    
     const staffTableBody = document.querySelector('#staff-table tbody');
     const addButton = document.querySelector('.btn-add');
     const fetchHoursButton = document.querySelector('.btn-fetch-hours');
@@ -10,70 +11,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const getToken = () => localStorage.getItem('token');
 
-    const fetchStaff = async () => {
+    const fetchApiData = async (url, options = {}) => {
         try {
-            const response = await fetch(apiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
+            const response = await fetch(url, options);
             if (response.ok) {
-                const staff = await response.json();
-                displayStaff(staff);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
-    };
-
-    const fetchRestaurants = async () => {
-        try {
-            const response = await fetch(restaurantsApiUrl, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const restaurants = await response.json();
-                populateRestaurantsDropdown(restaurants);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
-    };
-
-    const populateRestaurantsDropdown = (restaurants) => {
-        const restaurantDropdown = document.getElementById('input-restaurant');
-        restaurantDropdown.innerHTML = '';
-
-        restaurants.forEach(restaurant => {
-            const option = document.createElement('option');
-            option.value = restaurant.id;
-            option.textContent = restaurant.name;
-            restaurantDropdown.appendChild(option);
-        });
-    };
-
-    const getRestaurantNameById = async (restaurantId) => {
-        try {
-            const response = await fetch(`${restaurantsApiUrl}${restaurantId}`, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const restaurant = await response.json();
-                return restaurant.name;
+                return await response.json();
             } else {
                 console.error('Error:', await response.text());
                 return null;
@@ -82,6 +24,47 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.error('Error:', error.message);
             return null;
         }
+    };
+
+    const fetchStaff = async () => {
+        const staff = await fetchApiData(apiUrl, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (staff) displayStaff(staff);
+    };
+
+    const fetchRestaurants = async () => {
+        const restaurants = await fetchApiData(restaurantsApiUrl, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (restaurants) populateDropdown('input-restaurant', restaurants);
+    };
+
+    const populateDropdown = (elementId, items, valueField = 'id', textField = 'name') => {
+        const dropdown = document.getElementById(elementId);
+        dropdown.innerHTML = '';
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item[valueField];
+            option.textContent = item[textField];
+            dropdown.appendChild(option);
+        });
+    };
+
+    const getRestaurantNameById = async (restaurantId) => {
+        const restaurant = await fetchApiData(`${restaurantsApiUrl}${restaurantId}`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        return restaurant ? restaurant.name : null;
     };
 
     const displayStaff = async (staff) => {
@@ -110,142 +93,106 @@ document.addEventListener('DOMContentLoaded', async function() {
     };
 
     const handleDelete = async (staffId) => {
-        try {
-            const response = await fetch(`${apiUrl}${staffId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+        if (!confirm('Are you sure you want to delete this staff member?')) return;
 
-            if (response.ok) {
-                alert('Staff member was deleted successfully!');
-                await fetchStaff();
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        const response = await fetchApiData(`${apiUrl}${staffId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (response) {
+            alert('Staff member was deleted successfully!');
+            await fetchStaff();
         }
     };
 
     const handleEdit = (staffId) => {
-        const row = document.querySelector(`button[data-staffid="${staffId}"]`).parentNode.parentNode;
-        const [nameCell, positionCell, salaryCell, phoneCell, cardCell, loginCell, restaurantCell, editButtonCell, deleteButtonCell] = row.cells;
+        const row = document.querySelector(`button[data-staffid="${staffId}"]`).closest('tr');
+        const cells = row.cells;
 
-        const name = nameCell.textContent;
-        const position = positionCell.textContent;
-        const salary = salaryCell.textContent;
-        const phone = phoneCell.textContent;
-        const attendanceCard = cardCell.textContent;
-        const login = loginCell.textContent;
-        const restaurantName = restaurantCell.textContent;
+        ['name', 'position', 'hourlySalary', 'phone', 'attendanceCard', 'login', 'restaurantId'].forEach((field, index) => {
+            const value = cells[index].textContent;
+            if (field === 'position' || field === 'restaurantId') {
+                cells[index].innerHTML = `<select>${document.getElementById(`input-${field}`).innerHTML}</select>`;
+                cells[index].querySelector('select').value = value;
+            } else {
+                cells[index].innerHTML = `<input type="text" value="${value}">`;
+            }
+        });
 
-        nameCell.innerHTML = `<input type="text" value="${name}">`;
-        positionCell.innerHTML = `<select>${document.getElementById('input-position').innerHTML}</select>`;
-        positionCell.querySelector('select').value = position;
-        salaryCell.innerHTML = `<input type="number" value="${salary}">`;
-        phoneCell.innerHTML = `<input type="number" value="${phone}">`;
-        cardCell.innerHTML = `<input type="number" value="${attendanceCard}">`;
-        loginCell.innerHTML = `<input type="text" value="${login}">`;
-        restaurantCell.innerHTML = `<select>${document.getElementById('input-restaurant').innerHTML}</select>`;
-        restaurantCell.querySelector('select').value = restaurantName;
-
-        editButtonCell.innerHTML = `<button class="btn-save" data-staffid="${staffId}">Save</button>`;
-        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-staffid="${staffId}">Cancel</button>`;
+        cells[7].innerHTML = `<button class="btn-save" data-staffid="${staffId}">Save</button>`;
+        cells[8].innerHTML = `<button class="btn-cancel" data-staffid="${staffId}">Cancel</button>`;
     };
 
     const handleSave = async (staffId) => {
-        const row = document.querySelector(`button[data-staffid="${staffId}"]`).parentNode.parentNode;
-        const name = row.cells[0].querySelector('input').value;
-        const position = row.cells[1].querySelector('select').value;
-        const hourlySalary = row.cells[2].querySelector('input').value;
-        const phone = row.cells[3].querySelector('input').value;
-        const attendanceCard = row.cells[4].querySelector('input').value;
-        const login = row.cells[5].querySelector('input').value;
-        const restaurantId = row.cells[6].querySelector('select').value;
+        const row = document.querySelector(`button[data-staffid="${staffId}"]`).closest('tr');
+        const cells = row.cells;
 
-        if (!name || !position || !hourlySalary || !phone || !attendanceCard || !login || !restaurantId) {
+        const payload = {};
+        ['name', 'position', 'hourlySalary', 'phone', 'attendanceCard', 'login', 'restaurantId'].forEach((field, index) => {
+            payload[field] = field === 'position' || field === 'restaurantId' ? cells[index].querySelector('select').value : cells[index].querySelector('input').value;
+        });
+
+        if (!Object.values(payload).every(value => value)) {
             alert('Please fill in all fields');
             return;
         }
 
-        let password = null;
         if (confirm('Do you want to change the password?')) {
-            password = prompt('Please enter the new password:');
+            payload.password = prompt('Please enter the new password:');
         }
 
-        const payload = { name, position, hourlySalary, phone, attendanceCard, login, restaurantId };
-        if (password) {
-            payload.password = password;
-        }
+        const response = await fetchApiData(`${apiUrl}${staffId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
 
-        try {
-            const response = await fetch(`${apiUrl}${staffId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                alert('Staff member was updated successfully!');
-                await fetchStaff(); // Refetch staff instead of reloading the page
-            } else {
-                console.error('Error:', await response.json());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Staff member was updated successfully!');
+            await fetchStaff();
         }
     };
 
-    const handleCancel = (staffId) => {
-        fetchStaff(); // Simply refetch the staff to reset the table
+    const handleCancel = async () => {
+        await fetchStaff();
     };
 
     const handleAdd = async () => {
-        const name = document.getElementById('input-name').value;
-        const position = document.getElementById('input-position').value;
-        const hourlySalary = document.getElementById('input-salary').value;
-        const phone = document.getElementById('input-phone').value;
-        const attendanceCard = document.getElementById('input-card').value;
-        const login = document.getElementById('input-login').value;
-        const password = prompt('Please enter a password for the new staff member:');
-        const restaurantId = document.getElementById('input-restaurant').value;
+        const payload = {
+            name: document.getElementById('input-name').value,
+            position: document.getElementById('input-position').value,
+            hourlySalary: document.getElementById('input-salary').value,
+            phone: document.getElementById('input-phone').value,
+            attendanceCard: document.getElementById('input-card').value,
+            login: document.getElementById('input-login').value,
+            password: prompt('Please enter a password for the new staff member:'),
+            restaurantId: document.getElementById('input-restaurant').value,
+        };
 
-        if (!name || !position || !hourlySalary || !phone || !attendanceCard || !login || !password || !restaurantId) {
+        if (!Object.values(payload).every(value => value)) {
             alert('Please fill in all fields');
             return;
         }
 
-        try {
-            const response = await fetch(`${apiUrl}register`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, position, hourlySalary, phone, attendanceCard, login, password, restaurantId })
-            });
+        const response = await fetchApiData(`${apiUrl}register`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
 
-            if (response.ok) {
-                alert('Staff member was added successfully!');
-                document.getElementById('input-name').value = '';
-                document.getElementById('input-position').value = '';
-                document.getElementById('input-salary').value = '';
-                document.getElementById('input-phone').value = '';
-                document.getElementById('input-card').value = '';
-                document.getElementById('input-login').value = '';
-                document.getElementById('input-restaurant').value = '';
-                await fetchStaff();
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
+        if (response) {
+            alert('Staff member was added successfully!');
+            document.querySelectorAll('#staff-form input, #staff-form select').forEach(input => input.value = '');
+            await fetchStaff();
         }
     };
 
@@ -255,37 +202,24 @@ document.addEventListener('DOMContentLoaded', async function() {
             alert('Please select a date');
             return;
         }
-    
-        const url = `${workingHoursApiUrl}?date=${encodeURIComponent(selectedDate)}`;
-        console.log(`Fetching working hours from URL: ${url}`);
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-    
-            if (response.ok) {
-                const workingHours = await response.json();
-                console.log('Received working hours:', workingHours);
-                displayWorkingHours(workingHours);
-            } else {
-                console.error('Error:', await response.text());
-            }
-        } catch (error) {
-            console.error('Error:', error.message);
-        }
+
+        const workingHours = await fetchApiData(`${workingHoursApiUrl}?date=${encodeURIComponent(selectedDate)}`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (workingHours) displayWorkingHours(workingHours);
     };
-    
+
     const displayWorkingHours = (workingHours) => {
         workingHoursContainer.innerHTML = '';
-        console.log('Displaying working hours:', workingHours);
         workingHoursContainer.style.display = 'block';
-    
+
         workingHours.forEach(entry => {
             const p = document.createElement('p');
-            p.innerHTML = `${entry.name} - ${entry.totalWorkingHours} годин`;
+            p.textContent = `${entry.name} - ${entry.totalWorkingHours} годин`;
             workingHoursContainer.appendChild(p);
         });
     };
@@ -295,21 +229,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         const staffId = target.getAttribute('data-staffid');
 
         if (target.classList.contains('btn-delete')) {
-            if (confirm('Are you sure you want to delete this staff member?')) {
-                await handleDelete(staffId);
-            }
+            await handleDelete(staffId);
         } else if (target.classList.contains('btn-edit')) {
             handleEdit(staffId);
         } else if (target.classList.contains('btn-save')) {
             await handleSave(staffId);
         } else if (target.classList.contains('btn-cancel')) {
-            handleCancel(staffId);
+            handleCancel();
         }
     });
 
     addButton.addEventListener('click', handleAdd);
     fetchHoursButton.addEventListener('click', handleFetchHours);
 
-    fetchStaff();
-    fetchRestaurants();
+    await Promise.all([fetchStaff(), fetchRestaurants()]);
 });
