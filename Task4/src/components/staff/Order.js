@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const addButton = document.querySelector('.btn-add');
     const inputTable = document.getElementById('input-table');
     const inputStatus = document.getElementById('input-status');
+    const localizedText = {};
 
     const getToken = () => localStorage.getItem('token');
 
@@ -182,6 +183,35 @@ document.addEventListener('DOMContentLoaded', async function() {
             handleCancel(orderId);
         }
     });
+
+    const loadLanguage = async (lang) => {
+        try {
+            const response = await fetch(`../../public/locales/${lang}/${lang}.json`);
+            const translations = await response.json();
+            Object.assign(localizedText, translations);
+            applyTranslations();
+        } catch (error) {
+            console.error('Error loading language file:', error);
+        }
+    };
+
+    const applyTranslations = () => {
+        document.querySelectorAll('[data-translate]').forEach(element => {
+            const key = element.getAttribute('data-translate');
+            if (localizedText[key]) {
+                element.textContent = localizedText[key];
+            }
+        });
+    };
+
+    const languageSelect = document.getElementById('language-select');
+    languageSelect.addEventListener('change', (event) => {
+        const selectedLanguage = event.target.value;
+        loadLanguage(selectedLanguage);
+    });
+
+    // Load default language
+    loadLanguage(languageSelect.value);
 
     await fetchTables();
     await fetchOrders();

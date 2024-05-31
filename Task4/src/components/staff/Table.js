@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function() {
     const apiUrl = 'https://localhost:7206/api/Table/';
     const tablesTableBody = document.querySelector('#tables-table tbody');
+    const localizedText = {};
 
     const getToken = () => localStorage.getItem('token');
 
@@ -143,6 +144,35 @@ document.addEventListener('DOMContentLoaded', async function() {
             handleDelete(tableId);
         }
     });
+
+    const loadLanguage = async (lang) => {
+        try {
+            const response = await fetch(`../../public/locales/${lang}/${lang}.json`);
+            const translations = await response.json();
+            Object.assign(localizedText, translations);
+            applyTranslations();
+        } catch (error) {
+            console.error('Error loading language file:', error);
+        }
+    };
+
+    const applyTranslations = () => {
+        document.querySelectorAll('[data-translate]').forEach(element => {
+            const key = element.getAttribute('data-translate');
+            if (localizedText[key]) {
+                element.textContent = localizedText[key];
+            }
+        });
+    };
+
+    const languageSelect = document.getElementById('language-select');
+    languageSelect.addEventListener('change', (event) => {
+        const selectedLanguage = event.target.value;
+        loadLanguage(selectedLanguage);
+    });
+
+    // Load default language
+    loadLanguage(languageSelect.value);
 
     await fetchTables();
 });

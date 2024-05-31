@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const guestsApiUrl = 'https://localhost:7206/api/Guest/';
     const bookingsTableBody = document.querySelector('#bookings-table tbody');
     const addButton = document.querySelector('.btn-add');
+    const localizedText = {};
 
     const getToken = () => localStorage.getItem('token');
 
@@ -92,8 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${formattedDateTime}</td>
                 <td>${booking.personsCount}</td>
                 <td>${booking.comment}</td>
-                <td><button class="btn-edit" data-bookingid="${booking.id}">Edit</button></td>
-                <td><button class="btn-delete" data-bookingid="${booking.id}">Delete</button></td>
+                <td><button class="btn-edit" data-bookingid="${booking.id}">${localizedText.edit}</button></td>
+                <td><button class="btn-delete" data-bookingid="${booking.id}">${localizedText.delete}</button></td>
             `;
             bookingsTableBody.appendChild(row);
         }
@@ -109,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const handleDelete = async (bookingId) => {
         const response = await fetchWithAuth(`${apiUrl}${bookingId}`, { method: 'DELETE' });
         if (response) {
-            alert('Booking was deleted successfully!');
+            alert(localizedText.booking_deleted_successfully);
             await fetchBookings();
         }
     };
@@ -133,8 +134,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         tableCell.querySelector('select').value = tableNumber;
         guestCell.querySelector('select').value = guestName;
 
-        editButtonCell.innerHTML = `<button class="btn-save" data-bookingid="${bookingId}">Save</button>`;
-        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-bookingid="${bookingId}">Cancel</button>`;
+        editButtonCell.innerHTML = `<button class="btn-save" data-bookingid="${bookingId}">${localizedText.save}</button>`;
+        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-bookingid="${bookingId}">${localizedText.cancel}</button>`;
     };
 
     const handleSave = async (bookingId) => {
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const comment = row.cells[4].querySelector('input').value;
 
         if (!tableId || !guestId || !bookingDateTime || !personsCount) {
-            alert('Please fill in all fields');
+            alert(localizedText.please_fill_all_fields);
             return;
         }
 
@@ -156,7 +157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (response) {
-            alert('Booking was updated successfully!');
+            alert(localizedText.booking_updated_successfully);
             await fetchBookings();
         }
     };
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const comment = document.getElementById('input-text').value;
 
         if (!tableId || !guestId || !bookingDateTime || !personsCount) {
-            alert('Please fill in all fields');
+            alert(localizedText.please_fill_all_fields);
             return;
         }
 
@@ -183,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (response) {
-            alert('Booking was added successfully!');
+            alert(localizedText.booking_added_successfully);
             await fetchBookings();
         }
     };
@@ -206,4 +207,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     await fetchTables();
     await fetchGuests();
     await fetchBookings();
+
+    const loadLanguage = async (lang) => {
+        try {
+            const response = await fetch(`../../public/locales/${lang}/${lang}.json`);
+            const translations = await response.json();
+            Object.assign(localizedText, translations);
+            applyTranslations();
+        } catch (error) {
+            console.error('Error loading language file:', error);
+        }
+    };
+    
+    const applyTranslations = () => {
+        document.querySelectorAll('[data-translate]').forEach(element => {
+            const key = element.getAttribute('data-translate');
+            if (localizedText[key]) {
+                element.textContent = localizedText[key];
+            }
+        });
+    };
+    
+    const languageSelect = document.getElementById('language-select');
+    languageSelect.addEventListener('change', (event) => {
+        const selectedLanguage = event.target.value;
+        loadLanguage(selectedLanguage);
+    });
+    
+    // Load default language
+    loadLanguage(languageSelect.value);
 });

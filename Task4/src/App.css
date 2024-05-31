@@ -209,7 +209,8 @@ td {
 #input-table, 
 #input-status, 
 #input-datetime, 
-#input-guest {
+#input-guest,
+#language-select {
     font-family: "Montserrat";
     font-weight: 900;
     color: #000;
@@ -226,7 +227,8 @@ input[type="date"],
 #input-status, 
 #input-position, 
 #input-restaurant, 
-#input-staff {
+#input-staff,
+#language-select {
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
