@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const fetchSchedules = async (staffId) => {
         const schedules = await fetchWithAuth(`${apiUrl}${staffId}`);
+        console.log('Fetched schedules:', schedules); // Логирование полученных данных
         if (schedules && Array.isArray(schedules)) {
             displaySchedules(schedules);
         } else {
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const fetchStaff = async (staffId) => {
         const staff = await fetchWithAuth(`${staffApiUrl}${staffId}`);
+        console.log('Fetched staff:', staff); // Логирование полученных данных
         if (staff) {
             populateStaffDropdown(staff);
             currentStaffName = staff.name;
@@ -111,9 +113,20 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     addButton.addEventListener('click', handleAdd);
 
+    const decodeToken = (token) => {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        return JSON.parse(jsonPayload);
+    };
+
     const token = getToken();
     if (token) {
         currentUser = decodeToken(token);
+        console.log('Current user:', currentUser); // Логирование текущего пользователя
         if (currentUser) {
             await fetchStaff(currentUser.nameid);
             await fetchSchedules(currentUser.nameid);
@@ -124,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             const response = await fetch(`../../public/locales/${lang}/${lang}.json`);
             const translations = await response.json();
+            console.log('Loaded translations:', translations); // Логирование содержимого загруженного файла
             Object.assign(localizedText, translations);
             applyTranslations();
         } catch (error) {

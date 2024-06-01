@@ -45,20 +45,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fetchTables = async () => {
         const tables = await fetchWithAuth(tablesApiUrl);
         if (tables) {
+            console.log('Fetched tables:', tables); // Логирование полученных данных
             populateDropdown('input-table', tables, 'number');
+        } else {
+            console.error('Failed to fetch tables');
         }
     };
 
     const fetchGuests = async () => {
         const guests = await fetchWithAuth(guestsApiUrl);
         if (guests) {
+            console.log('Fetched guests:', guests); // Логирование полученных данных
             populateDropdown('input-guest', guests, 'name');
+        } else {
+            console.error('Failed to fetch guests');
         }
     };
 
     const populateDropdown = (elementId, items, textProperty) => {
         const dropdown = document.getElementById(elementId);
         dropdown.innerHTML = '';
+
+        if (!items || items.length === 0) {
+            console.warn(`No items found for dropdown: ${elementId}`);
+            return;
+        }
 
         items.forEach(item => {
             const option = document.createElement('option');
@@ -74,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const displayBookings = async (bookings) => {
-        bookingsTableBody.innerHTML = '';
+        bookingsTableBody.innerHTML = '';  // Очистка таблицы перед добавлением новых записей
 
         for (const booking of bookings) {
             const tableNumber = await getItemPropertyById(tablesApiUrl, booking.tableId, 'number');
@@ -93,8 +104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${formattedDateTime}</td>
                 <td>${booking.personsCount}</td>
                 <td>${booking.comment}</td>
-                <td><button class="btn-edit" data-bookingid="${booking.id}">${localizedText.edit}</button></td>
-                <td><button class="btn-delete" data-bookingid="${booking.id}">${localizedText.delete}</button></td>
+                <td><button class="btn-edit" data-bookingid="${booking.id}">${localizedText.edit || 'Edit'}</button></td>
+                <td><button class="btn-delete" data-bookingid="${booking.id}">${localizedText.delete || 'Delete'}</button></td>
             `;
             bookingsTableBody.appendChild(row);
         }
@@ -110,8 +121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const handleDelete = async (bookingId) => {
         const response = await fetchWithAuth(`${apiUrl}${bookingId}`, { method: 'DELETE' });
         if (response) {
-            alert(localizedText.booking_deleted_successfully);
+            alert(localizedText.booking_deleted_successfully || 'Booking deleted successfully');
             await fetchBookings();
+            location.reload();
         }
     };
 
@@ -134,8 +146,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         tableCell.querySelector('select').value = tableNumber;
         guestCell.querySelector('select').value = guestName;
 
-        editButtonCell.innerHTML = `<button class="btn-save" data-bookingid="${bookingId}">${localizedText.save}</button>`;
-        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-bookingid="${bookingId}">${localizedText.cancel}</button>`;
+        editButtonCell.innerHTML = `<button class="btn-save" data-bookingid="${bookingId}">${localizedText.save || 'Save'}</button>`;
+        deleteButtonCell.innerHTML = `<button class="btn-cancel" data-bookingid="${bookingId}">${localizedText.cancel || 'Cancel'}</button>`;
     };
 
     const handleSave = async (bookingId) => {
@@ -147,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const comment = row.cells[4].querySelector('input').value;
 
         if (!tableId || !guestId || !bookingDateTime || !personsCount) {
-            alert(localizedText.please_fill_all_fields);
+            alert(localizedText.please_fill_all_fields || 'Please fill all fields');
             return;
         }
 
@@ -157,8 +169,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (response) {
-            alert(localizedText.booking_updated_successfully);
+            alert(localizedText.booking_updated_successfully || 'Booking updated successfully');
             await fetchBookings();
+            location.reload();
         }
     };
 
@@ -174,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const comment = document.getElementById('input-text').value;
 
         if (!tableId || !guestId || !bookingDateTime || !personsCount) {
-            alert(localizedText.please_fill_all_fields);
+            alert(localizedText.please_fill_all_fields || 'Please fill all fields');
             return;
         }
 
@@ -184,8 +197,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (response) {
-            alert(localizedText.booking_added_successfully);
+            alert(localizedText.booking_added_successfully || 'Booking added successfully');
             await fetchBookings();
+            location.reload();
         }
     };
 
@@ -204,36 +218,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     addButton.addEventListener('click', handleAdd);
 
-    await fetchTables();
-    await fetchGuests();
-    await fetchBookings();
-
     const loadLanguage = async (lang) => {
         try {
             const response = await fetch(`../../public/locales/${lang}/${lang}.json`);
             const translations = await response.json();
-            Object.assign(localizedText, translations);
-            applyTranslations();
+            console.log('Loaded translations:', translations); // Логирование содержимого загруженного файла
+            Object.assign(localizedText, translations); // Fix: добавляем переводы к существующим
         } catch (error) {
             console.error('Error loading language file:', error);
         }
     };
-    
-    const applyTranslations = () => {
-        document.querySelectorAll('[data-translate]').forEach(element => {
-            const key = element.getAttribute('data-translate');
-            if (localizedText[key]) {
-                element.textContent = localizedText[key];
-            }
-        });
-    };
-    
-    const languageSelect = document.getElementById('language-select');
-    languageSelect.addEventListener('change', (event) => {
-        const selectedLanguage = event.target.value;
-        loadLanguage(selectedLanguage);
-    });
-    
-    // Load default language
-    loadLanguage(languageSelect.value);
+
+    // Fetch initial data
+    await loadLanguage('en');
+    await fetchTables();
+    await fetchGuests();
+    await fetchBookings();
 });

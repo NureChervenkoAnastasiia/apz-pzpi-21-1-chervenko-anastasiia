@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response) {
             alert('Product was updated successfully!');
             fetchProducts();
+            location.reload();
         }
     };
 
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response) {
             alert('Product was added successfully!');
             fetchProducts();
+            location.reload();
         }
     };
 

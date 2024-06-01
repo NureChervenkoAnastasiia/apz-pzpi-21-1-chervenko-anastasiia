@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td><button class="btn-edit" data-orderid="${order.id}">Edit</button></td>
                 <td><button class="btn-delete" data-orderid="${order.id}">Delete</button></td>
             `;
-            ordersTableBody.appendChild(row);
+            ordersTableBody.appendChild(row);  // Добавляем строку в тело таблицы
         }
     };
 
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error loading language file:', error);
         }
     };
-    
+
     const applyTranslations = () => {
         document.querySelectorAll('[data-translate]').forEach(element => {
             const key = element.getAttribute('data-translate');
@@ -186,17 +186,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     };
-    
+
     const languageSelect = document.getElementById('language-select');
     languageSelect.addEventListener('change', (event) => {
         const selectedLanguage = event.target.value;
         loadLanguage(selectedLanguage);
     });
-    
+
     // Load default language
     loadLanguage(languageSelect.value);
 
     await fetchTables();
     await fetchOrders();
-
 });

@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response !== null) {
             alert('Schedule was deleted successfully!');
             await fetchSchedules();
+            location.reload();
         }
     };
 
@@ -115,6 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response !== null) {
             alert('Schedule was updated successfully!');
             await fetchSchedules();
+            location.reload();
         }
     };
 
@@ -137,6 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response !== null) {
             alert('Schedule was added successfully!');
             await fetchSchedules();
+            location.reload();
         }
     };
 

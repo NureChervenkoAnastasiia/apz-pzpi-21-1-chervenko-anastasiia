@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (response) {
             alert('Staff member was deleted successfully!');
             await fetchStaff();
+            location.reload();
         }
     };
 
@@ -157,6 +158,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (response) {
             alert('Staff member was updated successfully!');
             await fetchStaff();
+            location.reload();
         }
     };
 
@@ -194,6 +196,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             alert('Staff member was added successfully!');
             document.querySelectorAll('#staff-form input, #staff-form select').forEach(input => input.value = '');
             await fetchStaff();
+            location.reload();
         }
     };
 

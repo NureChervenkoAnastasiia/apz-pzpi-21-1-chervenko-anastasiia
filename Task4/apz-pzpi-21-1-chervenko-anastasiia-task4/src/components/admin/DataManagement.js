@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             alert('Backup created successfully');
             fetchBackups(); // Refresh the backup list
+            location.reload();
         } catch (error) {
             console.error('Error creating backup:', error);
             alert(`Error creating backup: ${error.message}`);

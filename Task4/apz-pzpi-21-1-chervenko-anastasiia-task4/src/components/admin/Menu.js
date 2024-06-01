@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response) {
             alert('Dish or drink was deleted successfully!');
             await fetchMenu();
+            location.reload();
         }
     };
 
@@ -178,6 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response) {
             alert('Dish or drink was updated successfully!');
             await fetchMenu();
+            location.reload();
         }
     };
 
@@ -228,6 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response) {
             alert('Dish or drink was added successfully!');
             await fetchMenu();
+            location.reload();
         }
     };
 

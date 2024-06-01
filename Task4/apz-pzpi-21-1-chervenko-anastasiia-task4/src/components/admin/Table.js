@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (response.ok) {
                 alert('Table was deleted successfully!');
                 await fetchTables();
+                location.reload();
             } else {
                 console.error('Error:', await response.text());
             }
@@ -97,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (response.ok) {
                 alert('Table was updated successfully!');
                 await fetchTables();
+                location.reload();
             } else {
                 console.error('Error:', await response.json());
             }
@@ -107,6 +109,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     const handleCancel = async () => {
         await fetchTables();
+        location.reload();
     };
 
     const handleAdd = async () => {
@@ -131,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (response.ok) {
                 alert('Table was added successfully!');
                 await fetchTables();
+                location.reload();
             } else {
                 console.error('Error:', await response.text());
             }
