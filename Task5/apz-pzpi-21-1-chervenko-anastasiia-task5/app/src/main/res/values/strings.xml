@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">TastifyMobile</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="login_account">Log in account</string>
+    <string name="enter">Enter</string>
+    <string name="register">Register</string>
+    <string name="name">Name</string>
+    <string name="number">Phone number</string>
+    <string name="to_register">Do not have an account? Register here</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TastifyMobile</string>
+    <string name="password">Пароль</string>
+    <string name="login">Логін</string>
+    <string name="login_account">Вхід в обліковий запис</string>
+    <string name="enter">Вхід</string>
+    <string name="register">Зареєструвати обліковий запис</string>
+    <string name="name">ПІБ</string>
+    <string name="number">Номер телефону</string>
+    <string name="to_register">Нема облікового запису? Зареєструватись тут</string>
+</resources>
