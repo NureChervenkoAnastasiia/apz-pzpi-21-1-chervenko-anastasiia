@@ -1,6 +1,7 @@
 package com.example.tastifymobile.api
 
 import com.example.tastifymobile.models.Guest
+import com.example.tastifymobile.models.GuestRegistration
 import com.example.tastifymobile.models.LoginRequest
 import com.example.tastifymobile.models.LoginResponse
 import com.example.tastifymobile.models.Menu
@@ -16,6 +17,9 @@ interface ApiService {
 
     @GET("api/Guest/{guestId}")
     fun getGuestById(@Path("guestId") guestId: String): Call<Guest>
+
+    @POST("api/Guest/register")
+    fun registerGuest(@Body guestRegistration: GuestRegistration): Call<LoginResponse>
 
     @GET("api/Menu")
     fun getAllDishes(): Call<List<Menu>>

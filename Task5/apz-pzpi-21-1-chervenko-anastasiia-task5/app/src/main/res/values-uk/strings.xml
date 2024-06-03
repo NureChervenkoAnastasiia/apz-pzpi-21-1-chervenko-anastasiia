@@ -12,4 +12,5 @@
     <string name="profile">Профіль</string>
     <string name="bookings">Бронювання</string>
     <string name="menu">Меню</string>
+    <string name="login_no_info">Необхідно ввести лоігн та пароль</string>
 </resources>

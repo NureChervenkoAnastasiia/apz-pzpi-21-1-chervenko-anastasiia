@@ -11,4 +11,5 @@
     <string name="profile">Profile</string>
     <string name="bookings">Bookings</string>
     <string name="menu">Menu</string>
+    <string name="login_no_info">Login and password are required</string>
 </resources>
