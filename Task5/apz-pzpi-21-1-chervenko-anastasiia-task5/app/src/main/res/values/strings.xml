@@ -8,4 +8,7 @@
     <string name="name">Name</string>
     <string name="number">Phone number</string>
     <string name="to_register">Do not have an account? Register here</string>
+    <string name="profile">Profile</string>
+    <string name="bookings">Bookings</string>
+    <string name="menu">Menu</string>
 </resources>

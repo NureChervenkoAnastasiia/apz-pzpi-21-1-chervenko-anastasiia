@@ -37,7 +37,7 @@ namespace TastifyAPI.Controllers
         /// <returns>
         /// A list of TableDto.
         /// </returns>
-        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator + "," + Roles.Guest)]
         [HttpGet]
         public async Task<ActionResult<List<TableDto>>> GetAllTables()
         {
@@ -67,7 +67,7 @@ namespace TastifyAPI.Controllers
         /// <returns>
         /// A TableDto.
         /// </returns>
-        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator)]
+        [Authorize(Roles = Roles.Worker + "," + Roles.Administrator + "," + Roles.Guest)]
         [HttpGet("{tableId:length(24)}")]
         public async Task<ActionResult<TableDto>> GetTableById(string tableId)
         {

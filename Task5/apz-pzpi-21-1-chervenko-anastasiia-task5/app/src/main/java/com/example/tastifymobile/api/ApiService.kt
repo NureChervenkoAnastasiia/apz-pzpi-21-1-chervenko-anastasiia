@@ -3,6 +3,7 @@ package com.example.tastifymobile.api
 import com.example.tastifymobile.models.Guest
 import com.example.tastifymobile.models.LoginRequest
 import com.example.tastifymobile.models.LoginResponse
+import com.example.tastifymobile.models.Menu
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,4 +16,10 @@ interface ApiService {
 
     @GET("api/Guest/{guestId}")
     fun getGuestById(@Path("guestId") guestId: String): Call<Guest>
+
+    @GET("api/Menu")
+    fun getAllDishes(): Call<List<Menu>>
+
+
+
 }

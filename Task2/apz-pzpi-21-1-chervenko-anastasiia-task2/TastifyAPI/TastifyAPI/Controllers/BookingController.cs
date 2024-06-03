@@ -208,8 +208,7 @@ namespace TastifyAPI.Controllers
 
                 var createdBookingDto = _mapper.Map<BookingDto>(booking);
 
-                return CreatedAtAction(nameof(GetBookingById), 
-                    new { bookingId = createdBookingDto.Id }, createdBookingDto);
+                return Ok("Booking created successfully!");
             }
             catch (Exception ex)
             {

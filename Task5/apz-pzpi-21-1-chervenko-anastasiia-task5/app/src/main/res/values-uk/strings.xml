@@ -9,4 +9,7 @@
     <string name="name">ПІБ</string>
     <string name="number">Номер телефону</string>
     <string name="to_register">Нема облікового запису? Зареєструватись тут</string>
+    <string name="profile">Профіль</string>
+    <string name="bookings">Бронювання</string>
+    <string name="menu">Меню</string>
 </resources>

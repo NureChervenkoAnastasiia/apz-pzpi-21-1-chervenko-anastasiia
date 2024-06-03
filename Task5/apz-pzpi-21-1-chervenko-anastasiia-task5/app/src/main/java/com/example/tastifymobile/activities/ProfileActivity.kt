@@ -1,4 +1,3 @@
-// ProfileActivity.kt
 package com.example.tastifymobile.activities
 
 import android.os.Bundle
