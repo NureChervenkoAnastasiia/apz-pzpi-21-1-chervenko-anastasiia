@@ -1,8 +1,8 @@
+// TokenManager.kt
 package com.example.tastifymobile.api
 
 import android.content.Context
 import android.util.Log
-
 import com.auth0.android.jwt.JWT
 
 class TokenManager(private val context: Context) {
@@ -19,7 +19,7 @@ class TokenManager(private val context: Context) {
         return sharedPreferences.getString("jwt_token", null)
     }
 
-    fun getWorkerIdFromToken(): Int? {
+    fun getGuestIdFromToken(): String? {
         val token = getJwtToken()
         Log.d("TokenManager", "Token: $token")
         if (token == null) {
@@ -29,6 +29,6 @@ class TokenManager(private val context: Context) {
         val jwt = JWT(token)
         val claim = jwt.getClaim("nameid")
         Log.d("TokenManager", "Claim: ${claim.asString()}")
-        return claim.asInt()
+        return claim.asString()
     }
 }

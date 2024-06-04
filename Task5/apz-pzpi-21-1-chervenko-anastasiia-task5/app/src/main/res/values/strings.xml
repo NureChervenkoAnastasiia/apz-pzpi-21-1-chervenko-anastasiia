@@ -12,9 +12,16 @@
     <string name="bookings">Bookings</string>
     <string name="menu">Menu</string>
     <string name="email">Email</string>
+    <string name="bonus">Bonus</string>
+    <string name="save">Save</string>
+    <string name="get_coupon">Get coupon</string>
     <string name="login_no_info">Login and password are required</string>
     <string name="registration_success">Registration successful!</string>
     <string name="registration_no_info">All fields are required</string>
+    <string name="received_coupon">Received coupon</string>
+    <string name="discount">You have discount:</string>
+    <string name="grn">grn.</string>
+    <string name="no_bonus">No bonus available</string>
     <string name="size">Size</string>
     <string name="price">Price</string>
     <string name="info">Info</string>
