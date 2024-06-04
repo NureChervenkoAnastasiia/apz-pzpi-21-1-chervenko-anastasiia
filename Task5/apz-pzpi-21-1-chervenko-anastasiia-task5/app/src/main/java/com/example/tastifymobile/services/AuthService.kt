@@ -2,6 +2,7 @@ package com.example.tastifymobile.services
 
 import android.util.Log
 import com.example.tastifymobile.api.ApiService
+import com.example.tastifymobile.models.GuestRegistration
 import com.example.tastifymobile.models.LoginRequest
 import com.example.tastifymobile.models.LoginResponse
 import retrofit2.Call
@@ -31,4 +32,19 @@ class AuthService(private val apiService: ApiService) {
         })
     }
 
+    fun register(guestRegistration: GuestRegistration, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        apiService.registerGuest(guestRegistration).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("Registration failed: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                onError("Registration error: ${t.message}")
+            }
+        })
+    }
 }
