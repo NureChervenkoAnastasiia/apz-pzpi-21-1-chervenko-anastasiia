@@ -16,7 +16,7 @@
     <string name="bonus">Бонуси</string>
     <string name="save">Зберегти</string>
     <string name="get_coupon">Отримати купон</string>
-    <string name="login_no_info">Необхідно ввести лоігн та пароль</string>
+    <string name="login_no_info">Необхідно ввести логін та пароль</string>
     <string name="registration_success">Реєстрація пройшла успішно!</string>
     <string name="registration_no_info">Необхідно заповнити усі поля</string>
     <string name="received_coupon">Отриманий купон</string>
@@ -27,4 +27,13 @@
     <string name="price">Ціна</string>
     <string name="info">Інформація</string>
     <string name="type">Ціна</string>
+    <string name="table_number">Номер стола</string>
+    <string name="persons_count">Кількість людей</string>
+    <string name="select_date">Оберіть дату</string>
+    <string name="select_time">Оберіть час</string>
+    <string name="comment">Коментар</string>
+    <string name="add_booking">Додати бронювання</string>
+    <string name="update_booking">Оновити бронювання</string>
+    <string name="booking_updated">Бронювання оновлено</string>
+    <string name="booking_deleted">Бронювання видалено</string>
 </resources>

@@ -1,11 +1,13 @@
 package com.example.tastifymobile.api
 
 import android.content.Context
+import com.example.greenguardmobile.util.DateTypeUtil
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.google.gson.GsonBuilder
+import java.util.Date
 
 
 object NetworkModule {
@@ -21,6 +23,7 @@ object NetworkModule {
         }.build()
 
         val gson = GsonBuilder()
+            .registerTypeAdapter(Date::class.java, DateTypeUtil())
             .setLenient()
             .create()
 
