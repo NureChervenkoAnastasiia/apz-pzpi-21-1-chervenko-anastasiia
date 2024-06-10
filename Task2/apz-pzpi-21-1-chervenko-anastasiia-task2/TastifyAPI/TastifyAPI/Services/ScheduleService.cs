@@ -52,8 +52,6 @@ namespace TastifyAPI.Services
 
         public async Task RemoveAsync(string id) =>
             await _scheduleCollection.DeleteOneAsync(x => x.Id == id);
-        /*public async Task<List<Schedule?>> GetByStaffAsync(string id) =>
-            await _scheduleCollection.Find(x => x.StaffId == id).FirstOrDefaultAsync();*/
 
         public async Task<List<Schedule?>> GetByStaffAsync(string id)
         {
